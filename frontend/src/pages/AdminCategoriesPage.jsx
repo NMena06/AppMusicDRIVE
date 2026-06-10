@@ -36,7 +36,7 @@ export function AdminCategoriesPage() {
     <section className="page">
       <div className="section-title">
         <h2>Gestión de categorías</h2>
-        <p>Organizá la biblioteca por técnica, teoría, canciones y métodos</p>
+        <p>Organizá la biblioteca por técnica, teoría, canciones y métodos.</p>
       </div>
       <form className="inline-form" onSubmit={createCategory}>
         <input value={nombre} onChange={(event) => setNombre(event.target.value)} placeholder="Nueva categoría" />

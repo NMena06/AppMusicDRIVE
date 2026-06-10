@@ -1,10 +1,11 @@
 import * as alphaTab from '@coderline/alphatab';
-import { Pause, Play, RefreshCcw, Square } from 'lucide-react';
+import { Gauge, Pause, Play, RefreshCcw, Square } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { getDriveMediaUrl } from '../services/driveService.js';
 
 export function AlphaTabViewer({ document }) {
   const hostRef = useRef(null);
+  const scrollRef = useRef(null);
   const apiRef = useRef(null);
   const [status, setStatus] = useState('Cargando tablatura...');
   const [trackInfo, setTrackInfo] = useState('');
@@ -48,7 +49,7 @@ export function AlphaTabViewer({ document }) {
             enablePlayer: true,
             playerMode: alphaTab.PlayerMode.EnabledSynthesizer,
             soundFont: '/soundfont/sonivox.sf2',
-            scrollElement: hostRef.current,
+            scrollElement: scrollRef.current,
           },
           display: {
             scale: window.innerWidth < 640 ? 0.72 : 0.9,
@@ -135,23 +136,27 @@ export function AlphaTabViewer({ document }) {
   }
 
   const progress = position.endTime ? Math.min((position.currentTime / position.endTime) * 100, 100) : 0;
+  const fileType = document.extension?.toUpperCase() || 'GP';
+  const tabContext = trackInfo || document.categoria?.nombre || 'Tablatura';
 
   return (
     <div className="tab-viewer">
       <div className="tab-toolbar">
-        <div>
-          <strong>{document.extension?.toUpperCase()} Guitar Pro</strong>
-          <span>{trackInfo || document.categoria?.nombre || 'Tablatura'}</span>
+        <div className="tab-title">
+          <span>{fileType} Guitar Pro</span>
+          <strong>{document.titulo}</strong>
+          <small>{tabContext}</small>
         </div>
         <div className="tab-player-controls">
-          <button className="icon-button" onClick={togglePlayback} disabled={!isReady} title={isPlaying ? 'Pausar' : 'Reproducir'}>
+          <button className="tab-play-button" onClick={togglePlayback} disabled={!isReady} title={isPlaying ? 'Pausar' : 'Reproducir'}>
             {isPlaying ? <Pause size={17} /> : <Play size={17} />}
+            <span>{isPlaying ? 'Pausar' : 'Tocar'}</span>
           </button>
           <button className="icon-button" onClick={stopPlayback} disabled={!isReady} title="Detener">
             <Square size={16} />
           </button>
           <label className="compact-control">
-            Velocidad
+            <Gauge size={15} />
             <select value={speed} onChange={changeSpeed} disabled={!isReady}>
               <option value="0.5">50%</option>
               <option value="0.75">75%</option>
@@ -161,25 +166,30 @@ export function AlphaTabViewer({ document }) {
           </label>
           <label className="toggle-control">
             <input type="checkbox" checked={metronomeEnabled} onChange={toggleMetronome} disabled={!isReady} />
-            Click
+            Metrónomo
           </label>
           <label className="toggle-control">
             <input type="checkbox" checked={countInEnabled} onChange={toggleCountIn} disabled={!isReady} />
-            Cuenta
+            Cuenta previa
           </label>
           <button className="icon-button" onClick={() => window.location.reload()} title="Recargar">
             <RefreshCcw size={16} />
           </button>
         </div>
       </div>
-      <div className="tab-progress">
-        <span>{formatTime(position.currentTime)}</span>
-        <div><i style={{ width: `${progress}%` }} /></div>
-        <span>{formatTime(position.endTime)}</span>
+      <div className="tab-stage" ref={scrollRef}>
+        <div className="tab-progress" aria-label="Progreso de reproduccion">
+          <span>{formatTime(position.currentTime)}</span>
+          <div>
+            <i style={{ width: `${progress}%` }} />
+            <b style={{ left: `${progress}%` }} />
+          </div>
+          <span>{formatTime(position.endTime)}</span>
+        </div>
+        {status && <div className="tab-status">{status}</div>}
+        {error && <div className="empty-state">{error}</div>}
+        <div className="alphatab-host" ref={hostRef} />
       </div>
-      {status && <div className="tab-status">{status}</div>}
-      {error && <div className="empty-state">{error}</div>}
-      <div className="alphatab-host" ref={hostRef} />
     </div>
   );
 }

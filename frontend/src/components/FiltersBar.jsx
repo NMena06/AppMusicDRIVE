@@ -8,11 +8,11 @@ export function FiltersBar({ filters, setFilters, categories, folders, sections,
         <input
           value={filters.search || ''}
           onChange={(event) => setFilters({ ...filters, search: event.target.value })}
-          placeholder="Buscar por nombre, carpeta o ruta"
+          placeholder="Buscar material"
         />
       </label>
       <select value={filters.categoryId || ''} onChange={(event) => setFilters({ ...filters, categoryId: event.target.value })}>
-        <option value="">Todas las categorias</option>
+        <option value="">Todas las categorías</option>
         {categories.map((category) => (
           <option key={category.id} value={category.id}>
             {category.nombre}
@@ -38,7 +38,7 @@ export function FiltersBar({ filters, setFilters, categories, folders, sections,
       <select value={filters.sort || 'nombre'} onChange={(event) => setFilters({ ...filters, sort: event.target.value })}>
         <option value="nombre">Nombre</option>
         <option value="fecha">Fecha</option>
-        <option value="categoria">Categoria</option>
+        <option value="categoria">Categoría</option>
       </select>
       <div className="segmented">
         <button className={viewMode === 'grid' ? 'active' : ''} onClick={() => setViewMode('grid')} title="Grilla">

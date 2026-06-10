@@ -30,7 +30,7 @@ export function AdminDrivePage() {
       <div className="admin-band">
         <FolderSync size={34} />
         <div>
-          <h2>Configuracion de Google Drive</h2>
+        <h2>Configuración de Google Drive</h2>
           <p>Carpeta principal: {DRIVE_FOLDER_ID}</p>
         </div>
         <button className="button primary" onClick={syncDrive} disabled={syncing}>
@@ -52,7 +52,7 @@ export function AdminDrivePage() {
       )}
       <div className="section-title">
         <h2>Rutas cargadas</h2>
-        <p>La app recorre estas carpetas y elimina duplicados automaticamente.</p>
+        <p>La app recorre estas carpetas y elimina duplicados automáticamente.</p>
       </div>
       <div className="document-grid">
         {DRIVE_COLLECTIONS.map((collection) => (

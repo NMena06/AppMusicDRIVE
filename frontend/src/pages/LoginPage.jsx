@@ -29,13 +29,13 @@ export function LoginPage() {
         <div className="brand login-brand">
           <Music2 size={34} />
           <div>
-            <strong>Guitar PDF Library</strong>
+            <strong>Music Drive</strong>
             <span>Práctica, teoría y repertorio</span>
           </div>
         </div>
         <form onSubmit={handleSubmit}>
           <label>Email<input value={email} onChange={(event) => setEmail(event.target.value)} type="email" /></label>
-          <label>Password<input value={password} onChange={(event) => setPassword(event.target.value)} type="password" /></label>
+          <label>Contraseña<input value={password} onChange={(event) => setPassword(event.target.value)} type="password" /></label>
           {error && <p className="error">{error}</p>}
           <button className="button primary" type="submit">Entrar</button>
         </form>

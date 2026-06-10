@@ -20,8 +20,8 @@ export function MetronomePage() {
   return (
     <section className="page">
       <div className="section-title">
-        <h2>Metronomo</h2>
-        <p>Click configurable para practicar mientras navegas por toda la app.</p>
+        <h2>Metrónomo</h2>
+        <p>Click configurable para practicar mientras navegás por toda la app.</p>
       </div>
       <div className="metronome-panel">
         <div className="metronome-display">
@@ -40,7 +40,7 @@ export function MetronomePage() {
         </div>
         <div className="practice-grid">
           <label>
-            Compas
+            Compás
             <select value={beatsPerBar} onChange={(event) => setBeatsPerBar(Number(event.target.value))}>
               <option value="2">2/4</option>
               <option value="3">3/4</option>

@@ -14,7 +14,7 @@ export function DocumentList({ documents, onChange }) {
         <thead>
           <tr>
             <th>Documento</th>
-            <th>Categoria</th>
+            <th>Categoría</th>
             <th>Tipo</th>
             <th>Carpeta principal</th>
             <th>Carpeta</th>

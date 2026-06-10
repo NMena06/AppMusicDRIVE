@@ -8,7 +8,7 @@ export function FloatingMetronome() {
   return (
     <div className={isRunning ? 'floating-metronome active' : 'floating-metronome'}>
       <Link className="metro-info" to="/metronomo">
-        <span>{isRunning ? 'Click activo' : 'Metronomo'}</span>
+        <span>{isRunning ? 'Click activo' : 'Metrónomo'}</span>
         <strong>{bpm} BPM</strong>
       </Link>
       <div className="mini-beats">

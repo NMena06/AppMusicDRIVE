@@ -29,7 +29,7 @@ export function AdminDocumentsPage() {
     <section className="page">
       <div className="section-title">
         <h2>Gestión de documentos</h2>
-        <p>Editá títulos, categorías y visibilidad</p>
+        <p>Editá títulos, categorías y visibilidad.</p>
       </div>
       <div className="table-wrap">
         <table>
