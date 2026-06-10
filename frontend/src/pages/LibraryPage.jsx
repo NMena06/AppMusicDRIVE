@@ -18,8 +18,8 @@ function sortSections(a, b) {
   return a.localeCompare(b);
 }
 
-export function LibraryPage({ favoriteOnly = false }) {
-  const [filters, setFilters] = useState({ sort: 'nombre', favorite: favoriteOnly ? 'true' : '' });
+export function LibraryPage({ favoriteOnly = false, lockedSection = '', lockedType = '', title, description }) {
+  const [filters, setFilters] = useState({ sort: 'nombre', favorite: favoriteOnly ? 'true' : '', section: lockedSection, type: lockedType });
   const [categories, setCategories] = useState([]);
   const [viewMode, setViewMode] = useState('grid');
   const { documents, allDocuments, setDocuments, loading, error } = useDocuments(filters);
@@ -61,6 +61,18 @@ export function LibraryPage({ favoriteOnly = false }) {
     setCategories(getCategories());
   }, []);
 
+  useEffect(() => {
+    if (lockedSection && filters.section !== lockedSection) {
+      setFilters((current) => ({ ...current, section: lockedSection }));
+    }
+  }, [lockedSection, filters.section]);
+
+  useEffect(() => {
+    if (lockedType && filters.type !== lockedType) {
+      setFilters((current) => ({ ...current, type: lockedType }));
+    }
+  }, [lockedType, filters.type]);
+
   function patchDocument(changed) {
     setDocuments((current) => current.map((item) => (item.id === changed.id ? changed : item)));
   }
@@ -68,8 +80,8 @@ export function LibraryPage({ favoriteOnly = false }) {
   return (
     <section className="page">
       <div className="section-title">
-        <h2>{favoriteOnly ? 'Mis favoritos' : 'Biblioteca musical'}</h2>
-        <p>Material ordenado por carpeta, subcarpeta y tipo de estudio</p>
+        <h2>{title || (favoriteOnly ? 'Mis favoritos' : 'Biblioteca musical')}</h2>
+        <p>{description || 'Material ordenado por carpeta, subcarpeta y tipo de estudio'}</p>
       </div>
       {!loading && <LibraryOverview documents={allDocuments} filteredCount={documents.length} />}
       <FiltersBar
@@ -77,11 +89,11 @@ export function LibraryPage({ favoriteOnly = false }) {
         setFilters={setFilters}
         categories={categoryOptions}
         folders={folders}
-        sections={sections}
+        sections={lockedSection ? [lockedSection] : sections}
         viewMode={viewMode}
         setViewMode={setViewMode}
       />
-      {!loading && sections.length > 0 && (
+      {!loading && sections.length > 0 && !lockedSection && (
         <SectionNavigator
           sections={sections}
           counts={sectionCounts}

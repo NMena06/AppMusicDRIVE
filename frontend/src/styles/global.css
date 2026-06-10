@@ -254,9 +254,93 @@ th { color: var(--muted); font-weight: 600; font-size: 13px; }
 }
 .tab-toolbar strong { display: block; color: #1c1b1a; }
 .tab-toolbar span { display: block; color: #6d6257; font-size: 13px; margin-top: 2px; }
+.tab-player-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.tab-player-controls .icon-button { color: #1c1b1a; background: #fff; border-color: #ded8ce; }
+.tab-player-controls .icon-button:disabled { opacity: 0.45; cursor: not-allowed; }
+.compact-control {
+  display: grid;
+  grid-template-columns: auto 92px;
+  align-items: center;
+  gap: 8px;
+  color: #6d6257;
+}
+.compact-control select { color: #1c1b1a; background-color: #fff; border-color: #ded8ce; min-height: 38px; }
+.toggle-control { display: inline-flex; align-items: center; gap: 7px; color: #6d6257; white-space: nowrap; }
+.toggle-control input { width: auto; }
+.tab-progress {
+  display: grid;
+  grid-template-columns: 46px 1fr 46px;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  color: #6d6257;
+  background: #fffaf2;
+  border-bottom: 1px solid #eadfce;
+  font-size: 12px;
+}
+.tab-progress div { height: 7px; border-radius: 999px; background: #ded8ce; overflow: hidden; }
+.tab-progress i { display: block; height: 100%; background: #f97316; }
 .tab-status { padding: 10px 14px; color: #6d6257; background: #fff6e7; border-bottom: 1px solid #eadfce; }
 .alphatab-host { min-height: 0; overflow: auto; padding: 20px; background: #f7f4ee; }
 .alphatab-host svg { max-width: none; }
+.metronome-panel {
+  display: grid;
+  gap: 18px;
+  max-width: 760px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+}
+.metronome-display {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 28px 16px;
+  border-radius: 8px;
+  background: #171615;
+}
+.metronome-display span { color: var(--muted); }
+.metronome-display strong { font-size: 72px; line-height: 1; color: #fff; }
+.beat-dots { display: flex; gap: 10px; }
+.beat-dots i { width: 13px; height: 13px; border-radius: 50%; background: #3a332e; }
+.beat-dots i.active { background: var(--accent); box-shadow: 0 0 0 7px rgba(249, 115, 22, 0.14); }
+.metronome-actions { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 10px; }
+.metronome-actions input, .practice-grid input[type="range"] { accent-color: var(--accent); }
+.practice-grid { display: grid; grid-template-columns: 160px 1fr 1fr; gap: 14px; align-items: end; }
+.toggle-control.large {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: #fff;
+  background: #151514;
+}
+.metronome-main { min-height: 52px; justify-self: stretch; }
+.floating-metronome {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: auto auto 36px 36px 36px;
+  align-items: center;
+  gap: 8px;
+  padding: 9px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(23, 22, 21, 0.96);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.38);
+  backdrop-filter: blur(14px);
+}
+.floating-metronome.active { border-color: rgba(249, 115, 22, 0.6); }
+.metro-info { display: grid; min-width: 94px; }
+.metro-info span { color: var(--muted); font-size: 11px; }
+.metro-info strong { color: #fff; font-size: 15px; }
+.mini-beats { display: flex; gap: 5px; padding: 0 4px; }
+.mini-beats i { width: 8px; height: 8px; border-radius: 50%; background: #3a332e; }
+.mini-beats i.active { background: var(--accent); box-shadow: 0 0 0 5px rgba(249, 115, 22, 0.14); }
+.floating-metronome .icon-button { width: 36px; min-height: 36px; }
 .timeline { display: grid; gap: 10px; }
 .timeline-item { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding: 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
 .timeline-item span { color: var(--muted); }
@@ -281,7 +365,7 @@ th { color: var(--muted); font-weight: 600; font-size: 13px; }
 }
 
 @media (max-width: 640px) {
-  body { padding-bottom: 74px; }
+  body { padding-bottom: 128px; }
   .app-shell { min-height: 100dvh; }
   .sidebar {
     position: fixed;
@@ -410,8 +494,24 @@ th { color: var(--muted); font-weight: 600; font-size: 13px; }
   .viewer-header h2 { font-size: 16px; }
   .viewer-header .button { width: 100%; min-height: 42px; }
   .tab-toolbar { align-items: stretch; flex-direction: column; padding: 10px 12px; }
-  .tab-toolbar .button { width: 100%; color: #1c1b1a; background: #fff; border-color: #ded8ce; }
+  .tab-player-controls { display: grid; grid-template-columns: 42px 42px 1fr; justify-content: stretch; }
+  .compact-control { grid-column: 1 / -1; grid-template-columns: 1fr; }
+  .toggle-control { color: #1c1b1a; }
+  .tab-progress { grid-template-columns: 42px 1fr 42px; padding: 8px 10px; }
   .alphatab-host { padding: 10px; }
+  .metronome-panel { padding: 14px; gap: 14px; }
+  .metronome-display strong { font-size: 58px; }
+  .practice-grid { grid-template-columns: 1fr; }
+  .metronome-actions { grid-template-columns: 42px 1fr 42px; }
+  .floating-metronome {
+    left: 10px;
+    right: 10px;
+    bottom: calc(72px + env(safe-area-inset-bottom));
+    grid-template-columns: 1fr auto 36px 42px 36px;
+    padding: 8px;
+  }
+  .metro-info { min-width: 0; }
+  .mini-beats { max-width: 82px; overflow: hidden; }
   .pdf-toolbar { justify-content: stretch; min-height: auto; }
   .page-memory { grid-template-columns: 1fr 86px; width: calc(100% - 48px); }
   .pdf-toolbar .icon-button { min-height: 42px; }

@@ -1,6 +1,8 @@
 export function LibraryContext({ filters, count }) {
   const parts = [
     filters.section && `Carpeta: ${filters.section}`,
+    filters.type === 'guitar-pro' && 'Tipo: Guitar Pro',
+    filters.type === 'pdf' && 'Tipo: PDF',
     filters.categoryId && `Categoria: ${filters.categoryId}`,
     filters.folder && `Subcarpeta: ${filters.folder}`,
     filters.search && `Busqueda: "${filters.search}"`,

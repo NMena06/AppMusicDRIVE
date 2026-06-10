@@ -129,7 +129,7 @@ function cleanTitle(fileName) {
 
 function buildDescription(file, categoryName, sectionName, subfolderName) {
   const typeLabel = getDocumentType(file) === 'guitar-pro' ? 'Tablatura Guitar Pro' : 'PDF';
-  return `${typeLabel} en ${sectionName} / ${subfolderName} · ${categoryName}`;
+  return `${typeLabel} en ${sectionName} / ${subfolderName} - ${categoryName}`;
 }
 
 function getDocumentType(file) {
@@ -282,8 +282,9 @@ export function filterDocuments(documents, filters = {}) {
     const matchesFolder = !filters.folder || doc.carpeta_nombre === filters.folder;
     const matchesCollection = !filters.collection || doc.coleccion?.includes(filters.collection);
     const matchesSection = !filters.section || doc.seccion === filters.section;
+    const matchesType = !filters.type || doc.tipo_documento === filters.type;
     const matchesFavorite = filters.favorite !== 'true' || doc.esFavorito;
-    return matchesSearch && matchesCategory && matchesFolder && matchesCollection && matchesSection && matchesFavorite;
+    return matchesSearch && matchesCategory && matchesFolder && matchesCollection && matchesSection && matchesType && matchesFavorite;
   });
 
   const sort = filters.sort || 'nombre';
