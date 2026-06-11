@@ -5,6 +5,7 @@ import { AdminCategoriesPage } from '../pages/AdminCategoriesPage.jsx';
 import { AdminDocumentsPage } from '../pages/AdminDocumentsPage.jsx';
 import { AdminDrivePage } from '../pages/AdminDrivePage.jsx';
 import { AdminUsersPage } from '../pages/AdminUsersPage.jsx';
+import { CoursesPage } from '../pages/CoursesPage.jsx';
 import { DashboardPage } from '../pages/DashboardPage.jsx';
 import { FavoritesPage } from '../pages/FavoritesPage.jsx';
 import { GuitarProTabsPage } from '../pages/GuitarProTabsPage.jsx';
@@ -14,6 +15,7 @@ import { LibraryPage } from '../pages/LibraryPage.jsx';
 import { LoginPage } from '../pages/LoginPage.jsx';
 import { MetronomePage } from '../pages/MetronomePage.jsx';
 import { RecentPage } from '../pages/RecentPage.jsx';
+import { VideosPage } from '../pages/VideosPage.jsx';
 import { ViewerPage } from '../pages/ViewerPage.jsx';
 
 function PrivateRoute({ children }) {
@@ -41,9 +43,11 @@ export function AppRoutes() {
           }
         >
           <Route index element={<DashboardPage />} />
-          <Route path="biblioteca" element={<LibraryPage />} />
+          <Route path="biblioteca" element={<CoursesPage />} />
+          <Route path="archivo" element={<LibraryPage />} />
           <Route path="kiko" element={<KikoPage />} />
           <Route path="tabs" element={<GuitarProTabsPage />} />
+          <Route path="videos" element={<VideosPage />} />
           <Route path="armonia" element={<HarmonyPage />} />
           <Route path="metronomo" element={<MetronomePage />} />
           <Route path="favoritos" element={<FavoritesPage />} />

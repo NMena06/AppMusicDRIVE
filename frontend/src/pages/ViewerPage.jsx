@@ -1,4 +1,4 @@
-import { ArrowLeft, ExternalLink, Maximize2 } from 'lucide-react';
+import { ArrowLeft, BookOpen, ExternalLink, Maximize2 } from 'lucide-react';
 import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { fetchDriveDocuments, getProgress, saveProgress, touchHistory } from '../services/driveService.js';
@@ -8,6 +8,7 @@ const AlphaTabViewer = lazy(() => import('../components/AlphaTabViewer.jsx').the
 export function ViewerPage() {
   const { id } = useParams();
   const [doc, setDoc] = useState(null);
+  const [allDocuments, setAllDocuments] = useState([]);
   const [error, setError] = useState('');
   const frameRef = useRef(null);
   const previewUrl = useMemo(() => doc?.previewUrl || `https://drive.google.com/file/d/${id}/preview`, [doc, id]);
@@ -17,6 +18,7 @@ export function ViewerPage() {
       .then((documents) => {
         const found = documents.find((item) => item.id === id);
         if (!found) throw new Error('Documento no encontrado en Google Drive');
+        setAllDocuments(documents);
         setDoc(found);
         touchHistory(found, getProgress(id));
       })
@@ -35,6 +37,14 @@ export function ViewerPage() {
   }
 
   const isGuitarPro = doc?.tipo_documento === 'guitar-pro';
+  const isVideo = doc?.tipo_documento === 'video';
+  const relatedPdfs = useMemo(() => {
+    if (!doc || !isVideo) return [];
+    return allDocuments.filter((item) => {
+      if (item.id === doc.id || item.tipo_documento !== 'pdf') return false;
+      return item.carpeta_drive_id === doc.carpeta_drive_id || item.carpeta_ruta === doc.carpeta_ruta;
+    });
+  }, [allDocuments, doc, isVideo]);
 
   return (
     <section className={isGuitarPro ? 'viewer-page guitar-pro-viewer' : 'viewer-page'}>
@@ -42,10 +52,10 @@ export function ViewerPage() {
         <Link className="icon-button" to="/biblioteca" title="Volver"><ArrowLeft size={18} /></Link>
         <div>
           <h2>{doc?.titulo || 'Documento'}</h2>
-          <span>{doc?.categoria?.nombre || (isGuitarPro ? 'Guitar Pro' : 'PDF')}</span>
+          <span>{doc?.categoria?.nombre || (isGuitarPro ? 'Guitar Pro' : isVideo ? 'Video' : 'PDF')}</span>
         </div>
         <div className="viewer-actions">
-          {!isGuitarPro && (
+          {!isGuitarPro && !isVideo && (
             <label className="page-memory compact-memory">
               Pagina
               <input type="number" min="1" defaultValue={getProgress(id)} onChange={handlePageInput} />
@@ -70,7 +80,27 @@ export function ViewerPage() {
           <AlphaTabViewer document={doc} />
         </Suspense>
       )}
-      {!error && !isGuitarPro && doc && (
+      {!error && isVideo && doc && (
+        <div className="video-frame" ref={frameRef}>
+          <div className="video-stage">
+            <video className="video-player" src={doc.mediaUrl} controls playsInline poster={doc.thumbnailUrl || ''} />
+          </div>
+          {relatedPdfs.length > 0 && (
+            <aside className="related-materials">
+              <span>Material de la misma carpeta</span>
+              <div>
+                {relatedPdfs.map((item) => (
+                  <Link className="related-material" key={item.id} to={`/documentos/${item.id}`}>
+                    <BookOpen size={17} />
+                    <strong>{item.titulo}</strong>
+                  </Link>
+                ))}
+              </div>
+            </aside>
+          )}
+        </div>
+      )}
+      {!error && !isGuitarPro && !isVideo && doc && (
         <div className="pdf-frame" ref={frameRef}>
           <iframe className="drive-preview" src={previewUrl} title={doc.titulo} allow="fullscreen" />
         </div>

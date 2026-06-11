@@ -1,9 +1,10 @@
-import { BookOpen, FileText, Guitar, Heart } from 'lucide-react';
+import { BookOpen, FileText, Guitar, Heart, PlaySquare } from 'lucide-react';
 
 export function LibraryOverview({ documents, filteredCount }) {
   const total = documents.length;
   const pdfs = documents.filter((doc) => doc.tipo_documento === 'pdf').length;
   const tabs = documents.filter((doc) => doc.tipo_documento === 'guitar-pro').length;
+  const videos = documents.filter((doc) => doc.tipo_documento === 'video').length;
   const favorites = documents.filter((doc) => doc.esFavorito).length;
 
   return (
@@ -28,9 +29,10 @@ export function LibraryOverview({ documents, filteredCount }) {
         <span>Favoritos</span>
         <strong>{favorites}</strong>
       </div>
-      <div className="overview-card muted">
-        <span>Total biblioteca</span>
-        <strong>{total}</strong>
+      <div className="overview-card">
+        <PlaySquare size={20} />
+        <span>Videos</span>
+        <strong>{videos}</strong>
       </div>
     </div>
   );

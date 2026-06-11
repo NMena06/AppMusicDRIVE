@@ -2,6 +2,12 @@ import { BookOpen, ExternalLink, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toggleFavorite as toggleLocalFavorite } from '../services/driveService.js';
 
+function getTypeLabel(document) {
+  if (document.tipo_documento === 'guitar-pro') return `GP ${document.extension?.toUpperCase()}`;
+  if (document.tipo_documento === 'video') return 'Video';
+  return 'PDF';
+}
+
 export function DocumentList({ documents, onChange }) {
   async function toggleFavorite(document) {
     const esFavorito = toggleLocalFavorite(document.id);
@@ -30,7 +36,7 @@ export function DocumentList({ documents, onChange }) {
                 {document.titulo_original && document.titulo_original !== document.titulo && <small className="table-subtitle">{document.titulo_original}</small>}
               </td>
               <td>{document.categoria?.nombre || 'Otros'}</td>
-              <td>{document.tipo_documento === 'guitar-pro' ? `GP ${document.extension?.toUpperCase()}` : 'PDF'}</td>
+              <td>{getTypeLabel(document)}</td>
               <td>{document.seccion || 'General'}</td>
               <td>{document.carpeta_ruta || document.carpeta_nombre || 'Principal'}</td>
               <td>{document.fecha_modificacion_drive ? new Date(document.fecha_modificacion_drive).toLocaleDateString() : '-'}</td>
@@ -38,7 +44,7 @@ export function DocumentList({ documents, onChange }) {
                 <button className={document.esFavorito ? 'icon-button active' : 'icon-button'} onClick={() => toggleFavorite(document)} title="Favorito">
                   <Heart size={17} />
                 </button>
-                <Link className="icon-button" to={`/documentos/${document.id}`} title="Ver PDF">
+                <Link className="icon-button" to={`/documentos/${document.id}`} title={`Ver ${getTypeLabel(document)}`}>
                   <BookOpen size={17} />
                 </Link>
                 {document.url_view && (

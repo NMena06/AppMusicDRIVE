@@ -1,6 +1,8 @@
 import { Minus, Play, Plus, Square } from 'lucide-react';
 import { useMetronome } from '../context/MetronomeContext.jsx';
 
+const BPM_PRESETS = [60, 72, 90, 120, 140, 160];
+
 export function MetronomePage() {
   const {
     bpm,
@@ -18,11 +20,16 @@ export function MetronomePage() {
   } = useMetronome();
 
   return (
-    <section className="page">
-      <div className="section-title">
-        <h2>Metrónomo</h2>
-        <p>Click configurable para practicar mientras navegás por toda la app.</p>
+    <section className="page metronome-page">
+      <div className="metronome-hero">
+        <div>
+          <span>Herramienta de practica</span>
+          <h2>Metronomo</h2>
+          <p>Click preciso para estudiar tecnica, lectura y repertorio sin salir de la app.</p>
+        </div>
+        <strong>{beatsPerBar}/4</strong>
       </div>
+
       <div className="metronome-panel">
         <div className="metronome-display">
           <span>BPM</span>
@@ -33,14 +40,24 @@ export function MetronomePage() {
             ))}
           </div>
         </div>
-        <div className="metronome-actions">
-          <button className="icon-button" onClick={() => nudgeBpm(-1)}><Minus size={18} /></button>
-          <input type="range" min="30" max="260" value={bpm} onChange={(event) => setBpm(Number(event.target.value))} />
-          <button className="icon-button" onClick={() => nudgeBpm(1)}><Plus size={18} /></button>
+
+        <div className="bpm-presets">
+          {BPM_PRESETS.map((preset) => (
+            <button key={preset} className={bpm === preset ? 'active' : ''} onClick={() => setBpm(preset)} type="button">
+              {preset}
+            </button>
+          ))}
         </div>
+
+        <div className="metronome-actions">
+          <button className="icon-button" onClick={() => nudgeBpm(-1)} title="Bajar BPM"><Minus size={18} /></button>
+          <input type="range" min="30" max="260" value={bpm} onChange={(event) => setBpm(Number(event.target.value))} />
+          <button className="icon-button" onClick={() => nudgeBpm(1)} title="Subir BPM"><Plus size={18} /></button>
+        </div>
+
         <div className="practice-grid">
           <label>
-            Compás
+            Compas
             <select value={beatsPerBar} onChange={(event) => setBeatsPerBar(Number(event.target.value))}>
               <option value="2">2/4</option>
               <option value="3">3/4</option>
@@ -59,6 +76,7 @@ export function MetronomePage() {
             Acentuar primer pulso
           </label>
         </div>
+
         <button className={isRunning ? 'button secondary metronome-main' : 'button primary metronome-main'} onClick={toggle}>
           {isRunning ? <Square size={18} /> : <Play size={18} />}
           {isRunning ? 'Detener' : 'Iniciar'}

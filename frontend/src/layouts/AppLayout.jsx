@@ -1,12 +1,13 @@
-import { BookMarked, CircleDot, Clock3, FileText, FolderSync, Gauge, Guitar, Heart, Library, LogOut, Music2, Tags, Timer, Users } from 'lucide-react';
+import { BookMarked, CircleDot, FolderSync, Gauge, Guitar, Heart, Library, LogOut, Music2, PlaySquare, Timer } from 'lucide-react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { FloatingMetronome } from '../components/FloatingMetronome.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 
 export function AppLayout() {
-  const { user, logout, isAdmin } = useAuth();
+  const { logout, isAdmin } = useAuth();
   const location = useLocation();
   const isViewer = location.pathname.startsWith('/documentos/');
+  const isMetronomePage = location.pathname === '/metronomo';
 
   return (
     <div className={isViewer ? 'app-shell viewer-shell' : 'app-shell'}>
@@ -23,29 +24,17 @@ export function AppLayout() {
           <NavLink to="/biblioteca"><Library size={19} /> Biblioteca</NavLink>
           <NavLink to="/kiko"><Music2 size={19} /> KIKO</NavLink>
           <NavLink to="/tabs"><Guitar size={19} /> GP Tabs</NavLink>
+          <NavLink to="/videos"><PlaySquare size={19} /> Videos</NavLink>
           <NavLink to="/armonia"><CircleDot size={19} /> Armonia</NavLink>
           <NavLink to="/metronomo"><Timer size={19} /> Metronomo</NavLink>
           <NavLink to="/favoritos"><Heart size={19} /> Favoritos</NavLink>
-          <NavLink to="/ultimos"><Clock3 size={19} /> Ultimos vistos</NavLink>
-          {isAdmin && <NavLink to="/admin/documentos"><FileText size={19} /> Documentos</NavLink>}
-          {isAdmin && <NavLink to="/admin/categorias"><Tags size={19} /> Categorias</NavLink>}
           {isAdmin && <NavLink to="/admin/drive"><FolderSync size={19} /> Google Drive</NavLink>}
-          {isAdmin && <NavLink to="/admin/usuarios"><Users size={19} /> Usuarios</NavLink>}
         </nav>
         <button className="logout" onClick={logout}><LogOut size={18} /> Salir</button>
       </aside>
       <main className="main">
-        {!isViewer && (
-          <header className="topbar">
-            <div>
-              <span>Espacio de practica</span>
-              <h1>Hola, {user?.nombre}</h1>
-            </div>
-            <div className="user-pill">{user?.rol}</div>
-          </header>
-        )}
         <Outlet />
-        <FloatingMetronome />
+        {!isMetronomePage && <FloatingMetronome />}
       </main>
     </div>
   );

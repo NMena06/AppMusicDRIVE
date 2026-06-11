@@ -2,6 +2,7 @@ const DRIVE_API = 'https://www.googleapis.com/drive/v3/files';
 const FOLDER_MIME = 'application/vnd.google-apps.folder';
 const PDF_MIME = 'application/pdf';
 const GUITAR_PRO_EXTENSIONS = ['gp', 'gp3', 'gp4', 'gp5', 'gpx'];
+const VIDEO_EXTENSIONS = ['mp4', 'mov', 'm4v', 'webm', 'avi', 'mkv'];
 
 export const DRIVE_FOLDER_ID = import.meta.env.VITE_DRIVE_FOLDER_ID || '1OnSStgm34WFIiksFfvCimJIyd_oqMwcI';
 const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY || '';
@@ -14,7 +15,7 @@ let documentsCache = null;
 let documentsCacheAt = 0;
 let documentsRequest = null;
 
-const DRIVE_DOCUMENTS_CACHE_KEY = 'musicDrive.documents.cache.v1';
+const DRIVE_DOCUMENTS_CACHE_KEY = 'musicDrive.documents.cache.v3';
 const DRIVE_DOCUMENTS_CACHE_TTL = 1000 * 60 * 60 * 6;
 
 export const DRIVE_COLLECTIONS = [
@@ -32,6 +33,7 @@ export function getDriveMediaUrl(id) {
 
 const CATEGORY_RULES = [
   ['Libros de musica', ['libro', 'book', 'metodo', 'method', 'manual', 'user guide', 'matematicas', 'advanced acoustic', 'guitar pro']],
+  ['Clases en video', ['video', 'lesson', 'clase', 'masterclass', 'matheus asato', 'leandro celleri']],
   ['Acordes y progresiones', ['acorde', 'chord', 'progresion', 'progression', 'chordhouse', 'ii-v', 'i-vi', 'jazz guitar chord']],
   ['Tablaturas', ['tab', 'tablatura', 'gpx', 'gp5', 'riff', 'solo', 'lick', 'licks']],
   ['Canciones y repertorio', ['song', 'cancion', 'ignore alien', 'poison touch', 'hypergiant', 'remarkably human', 'impossible things', 'weakened', 'fear had him', 'nick johnston']],
@@ -134,7 +136,8 @@ function cleanTitle(fileName) {
 }
 
 function buildDescription(file, categoryName, sectionName, subfolderName) {
-  const typeLabel = getDocumentType(file) === 'guitar-pro' ? 'Tablatura Guitar Pro' : 'PDF';
+  const documentType = getDocumentType(file);
+  const typeLabel = documentType === 'guitar-pro' ? 'Tablatura Guitar Pro' : documentType === 'video' ? 'Video' : 'PDF';
   return `${typeLabel} en ${sectionName} / ${subfolderName} - ${categoryName}`;
 }
 
@@ -142,6 +145,7 @@ function getDocumentType(file) {
   const extension = getExtension(file.name);
   if (file.mimeType === PDF_MIME || extension === 'pdf') return 'pdf';
   if (GUITAR_PRO_EXTENSIONS.includes(extension)) return 'guitar-pro';
+  if (file.mimeType?.startsWith('video/') || VIDEO_EXTENSIONS.includes(extension)) return 'video';
   return 'other';
 }
 
@@ -196,7 +200,7 @@ async function walkFolder(folderId, folderName = 'Principal', results = [], fold
     }
 
     const documentType = getDocumentType(file);
-    if (documentType === 'pdf' || documentType === 'guitar-pro') {
+    if (documentType === 'pdf' || documentType === 'guitar-pro' || documentType === 'video') {
       const categoryName = getCategory(file.id) || inferCategory(file.name, file.folderPath, file.collectionName);
       const sectionName = inferSection(file.folderPath);
       const subfolderName = inferSubfolder(file.folderPath);
