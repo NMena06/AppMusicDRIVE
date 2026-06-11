@@ -34,30 +34,44 @@ export function ViewerPage() {
     if (doc) touchHistory(doc, page);
   }
 
+  const isGuitarPro = doc?.tipo_documento === 'guitar-pro';
+
   return (
-    <section className="viewer-page">
-      <div className="viewer-header">
-        <Link className="button secondary" to="/biblioteca"><ArrowLeft size={17} /> Volver</Link>
+    <section className={isGuitarPro ? 'viewer-page guitar-pro-viewer' : 'viewer-page'}>
+      <div className="viewer-header compact">
+        <Link className="icon-button" to="/biblioteca" title="Volver"><ArrowLeft size={18} /></Link>
         <div>
           <h2>{doc?.titulo || 'Documento'}</h2>
-          <span>{doc?.categoria?.nombre || 'PDF'}</span>
+          <span>{doc?.categoria?.nombre || (isGuitarPro ? 'Guitar Pro' : 'PDF')}</span>
         </div>
-        {doc?.url_view && <a className="button secondary" href={doc.url_view} target="_blank" rel="noreferrer"><ExternalLink size={17} /> Drive</a>}
+        <div className="viewer-actions">
+          {!isGuitarPro && (
+            <label className="page-memory compact-memory">
+              Pagina
+              <input type="number" min="1" defaultValue={getProgress(id)} onChange={handlePageInput} />
+            </label>
+          )}
+          {!isGuitarPro && (
+            <button className="icon-button" onClick={toggleFullscreen} title="Pantalla completa">
+              <Maximize2 size={18} />
+            </button>
+          )}
+          {doc?.url_view && (
+            <a className="icon-button" href={doc.url_view} target="_blank" rel="noreferrer" title="Abrir en Drive">
+              <ExternalLink size={18} />
+            </a>
+          )}
+        </div>
       </div>
+
       {error && <div className="empty-state">{error}</div>}
-      {!error && doc?.tipo_documento === 'guitar-pro' && (
+      {!error && isGuitarPro && (
         <Suspense fallback={<div className="empty-state">Cargando lector Guitar Pro...</div>}>
           <AlphaTabViewer document={doc} />
         </Suspense>
       )}
-      {!error && doc?.tipo_documento !== 'guitar-pro' && doc && (
+      {!error && !isGuitarPro && doc && (
         <div className="pdf-frame" ref={frameRef}>
-          <div className="pdf-toolbar">
-            <label className="page-memory">Última página<input type="number" min="1" defaultValue={getProgress(id)} onChange={handlePageInput} /></label>
-            <button className="icon-button" onClick={toggleFullscreen} title="Pantalla completa">
-              <Maximize2 size={18} />
-            </button>
-          </div>
           <iframe className="drive-preview" src={previewUrl} title={doc.titulo} allow="fullscreen" />
         </div>
       )}

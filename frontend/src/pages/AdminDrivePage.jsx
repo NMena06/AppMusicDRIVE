@@ -11,7 +11,7 @@ export function AdminDrivePage() {
     setSyncing(true);
     setError('');
     try {
-      const data = await fetchDriveDocuments();
+      const data = await fetchDriveDocuments({ forceRefresh: true });
       setResult({
         total: data.length,
         folders: [...new Set(data.map((doc) => doc.carpeta_nombre))].length,

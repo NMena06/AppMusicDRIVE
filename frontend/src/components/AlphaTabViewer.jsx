@@ -136,17 +136,9 @@ export function AlphaTabViewer({ document }) {
   }
 
   const progress = position.endTime ? Math.min((position.currentTime / position.endTime) * 100, 100) : 0;
-  const fileType = document.extension?.toUpperCase() || 'GP';
-  const tabContext = trackInfo || document.categoria?.nombre || 'Tablatura';
-
   return (
     <div className="tab-viewer">
-      <div className="tab-toolbar">
-        <div className="tab-title">
-          <span>{fileType} Guitar Pro</span>
-          <strong>{document.titulo}</strong>
-          <small>{tabContext}</small>
-        </div>
+      <div className="tab-toolbar compact">
         <div className="tab-player-controls">
           <button className="tab-play-button" onClick={togglePlayback} disabled={!isReady} title={isPlaying ? 'Pausar' : 'Reproducir'}>
             {isPlaying ? <Pause size={17} /> : <Play size={17} />}

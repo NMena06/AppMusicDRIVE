@@ -8,6 +8,7 @@ import { AdminUsersPage } from '../pages/AdminUsersPage.jsx';
 import { DashboardPage } from '../pages/DashboardPage.jsx';
 import { FavoritesPage } from '../pages/FavoritesPage.jsx';
 import { GuitarProTabsPage } from '../pages/GuitarProTabsPage.jsx';
+import { HarmonyPage } from '../pages/HarmonyPage.jsx';
 import { KikoPage } from '../pages/KikoPage.jsx';
 import { LibraryPage } from '../pages/LibraryPage.jsx';
 import { LoginPage } from '../pages/LoginPage.jsx';
@@ -43,6 +44,7 @@ export function AppRoutes() {
           <Route path="biblioteca" element={<LibraryPage />} />
           <Route path="kiko" element={<KikoPage />} />
           <Route path="tabs" element={<GuitarProTabsPage />} />
+          <Route path="armonia" element={<HarmonyPage />} />
           <Route path="metronomo" element={<MetronomePage />} />
           <Route path="favoritos" element={<FavoritesPage />} />
           <Route path="ultimos" element={<RecentPage />} />

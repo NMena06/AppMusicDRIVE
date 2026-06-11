@@ -10,6 +10,12 @@ const EXTRA_FOLDER_IDS = (import.meta.env.VITE_EXTRA_DRIVE_FOLDER_IDS || '')
   .map((id) => id.trim())
   .filter(Boolean);
 let driveWarnings = [];
+let documentsCache = null;
+let documentsCacheAt = 0;
+let documentsRequest = null;
+
+const DRIVE_DOCUMENTS_CACHE_KEY = 'musicDrive.documents.cache.v1';
+const DRIVE_DOCUMENTS_CACHE_TTL = 1000 * 60 * 60 * 6;
 
 export const DRIVE_COLLECTIONS = [
   {
@@ -229,7 +235,57 @@ async function walkFolder(folderId, folderName = 'Principal', results = [], fold
   return results;
 }
 
-export async function fetchDriveDocuments() {
+function applyLocalDocumentMeta(doc) {
+  const visibleName = getVisibleName(doc.id);
+  const categoryName = getCategory(doc.id) || doc.categoria_id || doc.categoria?.nombre;
+  return {
+    ...doc,
+    titulo: visibleName || doc.titulo,
+    nombre_visible: visibleName || doc.nombre_visible,
+    categoria_id: categoryName || doc.categoria_id,
+    categoria: categoryName ? { ...(doc.categoria || {}), nombre: categoryName } : doc.categoria,
+    esFavorito: isFavorite(doc.id),
+    progreso: getProgress(doc.id),
+  };
+}
+
+function applyLocalDocumentMetaList(documents) {
+  return documents.map(applyLocalDocumentMeta);
+}
+
+function isFreshCache(savedAt) {
+  return savedAt && Date.now() - savedAt < DRIVE_DOCUMENTS_CACHE_TTL;
+}
+
+function readDriveDocumentsCache() {
+  if (documentsCache && isFreshCache(documentsCacheAt)) {
+    return documentsCache;
+  }
+
+  const stored = readJson(DRIVE_DOCUMENTS_CACHE_KEY, null);
+  if (!stored?.savedAt || !Array.isArray(stored.documents) || !isFreshCache(stored.savedAt)) {
+    return null;
+  }
+
+  documentsCache = stored.documents;
+  documentsCacheAt = stored.savedAt;
+  return documentsCache;
+}
+
+function writeDriveDocumentsCache(documents) {
+  documentsCache = documents;
+  documentsCacheAt = Date.now();
+  writeJson(DRIVE_DOCUMENTS_CACHE_KEY, { savedAt: documentsCacheAt, documents });
+}
+
+export function clearDriveDocumentsCache() {
+  documentsCache = null;
+  documentsCacheAt = 0;
+  documentsRequest = null;
+  localStorage.removeItem(DRIVE_DOCUMENTS_CACHE_KEY);
+}
+
+async function loadDriveDocumentsFromDrive() {
   driveWarnings = [];
   const roots = [
     ...DRIVE_COLLECTIONS,
@@ -267,6 +323,27 @@ export async function fetchDriveDocuments() {
   }
 
   return documents;
+}
+
+export async function fetchDriveDocuments(options = {}) {
+  const forceRefresh = options.forceRefresh === true;
+
+  if (!forceRefresh) {
+    const cached = readDriveDocumentsCache();
+    if (cached) return applyLocalDocumentMetaList(cached);
+    if (documentsRequest) return documentsRequest.then(applyLocalDocumentMetaList);
+  }
+
+  documentsRequest = loadDriveDocumentsFromDrive()
+    .then((documents) => {
+      writeDriveDocumentsCache(documents);
+      return documents;
+    })
+    .finally(() => {
+      documentsRequest = null;
+    });
+
+  return documentsRequest.then(applyLocalDocumentMetaList);
 }
 
 export function getDriveWarnings() {
