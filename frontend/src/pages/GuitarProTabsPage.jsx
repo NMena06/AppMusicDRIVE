@@ -74,7 +74,7 @@ export function GuitarProTabsPage() {
       {error && <div className="empty-state">{error}</div>}
       {!loading && !error && visibleDocuments.length === 0 && <div className="empty-state">No hay tablaturas para mostrar.</div>}
       {!loading && !error && visibleDocuments.length > 0 && (
-        <div className="document-grid tabs-document-grid">
+        <div className="document-grid tabs-document-grid study-document-grid">
           {visibleDocuments.map((document) => (
             <DocumentCard key={document.id} document={document} onChange={patchDocument} />
           ))}

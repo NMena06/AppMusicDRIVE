@@ -1,4 +1,4 @@
-import { LoaderCircle, Music2, Play, Shuffle, Volume2 } from 'lucide-react';
+import { LoaderCircle, Music2, Play, Plus, Save, Shuffle, Trash2, Volume2 } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 
 const CIRCLE_KEYS = [
@@ -64,6 +64,88 @@ const PROGRESSION_CATEGORIES = [
   'Cadencia',
   'Oscura',
 ];
+
+const GREEK_MODES = [
+  {
+    id: 'ionian',
+    name: 'Jonico',
+    family: 'Mayor',
+    intervals: [0, 2, 4, 5, 7, 9, 11],
+    qualities: ['', 'm', 'm', '', '', 'm', 'dim'],
+    roman: ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii dim'],
+    color: 'Estable, brillante y resolutivo.',
+    lesson: 'Es la escala mayor natural. Funciona muy bien cuando el centro tonal queda claro en el I y la progresion resuelve de V a I.',
+    characteristicDegrees: [1, 4, 5],
+  },
+  {
+    id: 'dorian',
+    name: 'Dorico',
+    family: 'Menor',
+    intervals: [0, 2, 3, 5, 7, 9, 10],
+    qualities: ['m', 'm', '', '', 'm', 'dim', ''],
+    roman: ['i', 'ii', 'III', 'IV', 'v', 'vi dim', 'VII'],
+    color: 'Menor con sexta mayor, moderno y jazzistico.',
+    lesson: 'La nota clave es la sexta mayor. Para que suene dorico, usa i menor con IV mayor y evita resolver como menor natural todo el tiempo.',
+    characteristicDegrees: [1, 4, 7],
+  },
+  {
+    id: 'phrygian',
+    name: 'Frigio',
+    family: 'Menor',
+    intervals: [0, 1, 3, 5, 7, 8, 10],
+    qualities: ['m', '', '', 'm', 'dim', '', 'm'],
+    roman: ['i', 'bII', 'bIII', 'iv', 'v dim', 'bVI', 'bvii'],
+    color: 'Oscuro, flamenco y exotico.',
+    lesson: 'La segunda bemol es el sello. Alternar i menor con bII mayor hace aparecer el color frigio rapidamente.',
+    characteristicDegrees: [1, 2, 6],
+  },
+  {
+    id: 'lydian',
+    name: 'Lidio',
+    family: 'Mayor',
+    intervals: [0, 2, 4, 6, 7, 9, 11],
+    qualities: ['', '', 'm', 'dim', '', 'm', 'm'],
+    roman: ['I', 'II', 'iii', '#iv dim', 'V', 'vi', 'vii'],
+    color: 'Mayor flotante, abierto y cinematografico.',
+    lesson: 'La cuarta aumentada es la nota de identidad. Usa I mayor con II mayor para evitar que suene simplemente jonico.',
+    characteristicDegrees: [1, 2, 5],
+  },
+  {
+    id: 'mixolydian',
+    name: 'Mixolidio',
+    family: 'Mayor',
+    intervals: [0, 2, 4, 5, 7, 9, 10],
+    qualities: ['', 'm', 'dim', '', 'm', 'm', ''],
+    roman: ['I', 'ii', 'iii dim', 'IV', 'v', 'vi', 'bVII'],
+    color: 'Mayor con septima bemol, rock, blues y funk.',
+    lesson: 'El bVII mayor evita la resolucion clasica y da un color muy de riff. I - bVII - IV es una firma mixolidia.',
+    characteristicDegrees: [1, 4, 7],
+  },
+  {
+    id: 'aeolian',
+    name: 'Eolico',
+    family: 'Menor',
+    intervals: [0, 2, 3, 5, 7, 8, 10],
+    qualities: ['m', 'dim', '', 'm', 'm', '', ''],
+    roman: ['i', 'ii dim', 'III', 'iv', 'v', 'VI', 'VII'],
+    color: 'Menor natural, melancolico y estable.',
+    lesson: 'Es la escala menor natural. VI y VII mayores son esenciales para ese color menor moderno.',
+    characteristicDegrees: [1, 6, 7],
+  },
+  {
+    id: 'locrian',
+    name: 'Locrio',
+    family: 'Disminuido',
+    intervals: [0, 1, 3, 5, 6, 8, 10],
+    qualities: ['dim', '', 'm', 'm', '', '', 'm'],
+    roman: ['i dim', 'bII', 'bIII', 'iv', 'bV', 'bVI', 'bvii'],
+    color: 'Inestable, tenso y disminuido.',
+    lesson: 'La quinta bemol genera mucha tension. Conviene usarlo para pasajes oscuros o transiciones, no tanto como reposo largo.',
+    characteristicDegrees: [1, 2, 5],
+  },
+];
+
+const SONG_SECTION_TYPES = ['Intro', 'Verso', 'Pre-estribillo', 'Estribillo', 'Puente', 'Solo', 'Outro'];
 
 const SCALE_DEGREES = {
   major: {
@@ -152,6 +234,38 @@ function buildScale(tonic, mode) {
   });
 }
 
+function buildModeScale(tonic, modeConfig) {
+  const root = cleanTonic(tonic);
+  const rootIndex = NOTE_TO_INDEX[root] ?? 0;
+  const preferFlats = FLAT_TONICS.has(tonic) || root.includes('b');
+
+  return modeConfig.intervals.map((interval, index) => {
+    const note = noteName(rootIndex + interval, preferFlats);
+    const quality = modeConfig.qualities[index];
+
+    return {
+      degree: index + 1,
+      roman: modeConfig.roman[index],
+      name: SCALE_DEGREES.major.names[index],
+      chord: `${note}${quality}`,
+      note,
+      isCharacteristic: modeConfig.characteristicDegrees.includes(index + 1),
+    };
+  });
+}
+
+function readLocalList(key, fallback) {
+  try {
+    return JSON.parse(localStorage.getItem(key)) || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeLocalList(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
 function progressionChords(scale, progression) {
   return progression.degrees.map((degree) => scale[degree - 1]);
 }
@@ -184,6 +298,16 @@ export function HarmonyPage() {
   const [selectedCategory, setSelectedCategory] = useState('Todas');
   const [audioState, setAudioState] = useState('idle');
   const [audioError, setAudioError] = useState('');
+  const [selectedGreekMode, setSelectedGreekMode] = useState('ionian');
+  const [savedProgressions, setSavedProgressions] = useState(() => readLocalList('savedHarmonyProgressions', []));
+  const [songTitle, setSongTitle] = useState('Mi cancion');
+  const [savedSongs, setSavedSongs] = useState(() => readLocalList('savedHarmonySongs', []));
+  const [songSections, setSongSections] = useState(() => readLocalList('harmonySongSections', [
+    { id: crypto.randomUUID(), name: 'Intro', chords: [] },
+    { id: crypto.randomUUID(), name: 'Verso', chords: [] },
+    { id: crypto.randomUUID(), name: 'Estribillo', chords: [] },
+  ]));
+  const [activeSongSectionId, setActiveSongSectionId] = useState(() => songSections[0]?.id || '');
 
   const samplerRef = useRef(null);
   const toneRef = useRef(null);
@@ -193,6 +317,8 @@ export function HarmonyPage() {
   const tonic = mode === 'major' ? selected.major : selected.minor;
 
   const scale = useMemo(() => buildScale(tonic, mode), [tonic, mode]);
+  const activeGreekMode = GREEK_MODES.find((item) => item.id === selectedGreekMode) || GREEK_MODES[0];
+  const modalScale = useMemo(() => buildModeScale(tonic, activeGreekMode), [tonic, activeGreekMode]);
 
   const allProgressions = SCALE_DEGREES[mode].progressions;
 
@@ -218,6 +344,7 @@ export function HarmonyPage() {
   ];
 
   const activeChords = progressionChords(scale, activeProgression);
+  const activeSongSection = songSections.find((section) => section.id === activeSongSectionId) || songSections[0];
 
   function changeMode(nextMode) {
     setMode(nextMode);
@@ -237,6 +364,115 @@ export function HarmonyPage() {
         ? (next + 1) % filteredProgressions.length
         : next
     );
+  }
+
+  function saveCurrentProgression() {
+    const saved = {
+      id: crypto.randomUUID(),
+      name: activeProgression.name,
+      tonic,
+      mode: activeGreekMode.name,
+      chords: activeChords.map((item) => item.chord),
+      roman: activeChords.map((item) => item.roman),
+      createdAt: new Date().toISOString(),
+    };
+    setSavedProgressions((current) => {
+      const next = [saved, ...current].slice(0, 24);
+      writeLocalList('savedHarmonyProgressions', next);
+      return next;
+    });
+  }
+
+  function addSection(type = 'Verso') {
+    const section = { id: crypto.randomUUID(), name: type, chords: [] };
+    setSongSections((current) => {
+      const next = [...current, section];
+      writeLocalList('harmonySongSections', next);
+      return next;
+    });
+    setActiveSongSectionId(section.id);
+  }
+
+  function addChordToSong(chord) {
+    if (!activeSongSection) return;
+    setSongSections((current) => {
+      const next = current.map((section) => (
+        section.id === activeSongSection.id ? { ...section, chords: [...section.chords, chord] } : section
+      ));
+      writeLocalList('harmonySongSections', next);
+      return next;
+    });
+  }
+
+  function addProgressionToSong(progression = activeChords.map((item) => item.chord)) {
+    if (!activeSongSection) return;
+    setSongSections((current) => {
+      const next = current.map((section) => (
+        section.id === activeSongSection.id ? { ...section, chords: [...section.chords, ...progression] } : section
+      ));
+      writeLocalList('harmonySongSections', next);
+      return next;
+    });
+  }
+
+  function clearSection(sectionId) {
+    setSongSections((current) => {
+      const next = current.map((section) => (section.id === sectionId ? { ...section, chords: [] } : section));
+      writeLocalList('harmonySongSections', next);
+      return next;
+    });
+  }
+
+  function deleteProgression(id) {
+    setSavedProgressions((current) => {
+      const next = current.filter((progression) => progression.id !== id);
+      writeLocalList('savedHarmonyProgressions', next);
+      return next;
+    });
+  }
+
+  function deleteSection(sectionId) {
+    setSongSections((current) => {
+      const next = current.filter((section) => section.id !== sectionId);
+      const fallback = next.length > 0 ? next : [{ id: crypto.randomUUID(), name: 'Intro', chords: [] }];
+      writeLocalList('harmonySongSections', fallback);
+      if (!fallback.some((section) => section.id === activeSongSectionId)) {
+        setActiveSongSectionId(fallback[0]?.id || '');
+      }
+      return fallback;
+    });
+  }
+
+  function saveCurrentSong() {
+    const song = {
+      id: crypto.randomUUID(),
+      title: songTitle.trim() || 'Cancion sin titulo',
+      tonic,
+      mode: activeGreekMode.name,
+      sections: songSections,
+      createdAt: new Date().toISOString(),
+    };
+
+    setSavedSongs((current) => {
+      const next = [song, ...current.filter((item) => item.title !== song.title)].slice(0, 20);
+      writeLocalList('savedHarmonySongs', next);
+      return next;
+    });
+  }
+
+  function loadSong(song) {
+    setSongTitle(song.title);
+    setSongSections(song.sections);
+    setActiveSongSectionId(song.sections[0]?.id || '');
+    writeLocalList('harmonySongSections', song.sections);
+  }
+
+  function deleteSong(id) {
+    setSavedSongs((current) => {
+      const next = current.filter((song) => song.id !== id);
+      writeLocalList('savedHarmonySongs', next);
+      return next;
+    });
   }
 
   async function ensurePiano() {
@@ -339,6 +575,16 @@ export function HarmonyPage() {
     activeChords.forEach((item, index) => {
       const offset = index * 0.95;
       sampler.triggerAttackRelease(chordNotes(item.chord), '0.85', now + offset, 0.72);
+    });
+  }
+
+  async function playSongSketch() {
+    const { sampler, Tone } = await ensurePiano();
+    const now = Tone.now();
+    const chords = songSections.flatMap((section) => section.chords);
+
+    chords.forEach((chord, index) => {
+      sampler.triggerAttackRelease(chordNotes(chord), '0.85', now + index * 0.82, 0.7);
     });
   }
 
@@ -462,6 +708,17 @@ export function HarmonyPage() {
               ))}
             </div>
 
+            <div className="progression-tools">
+              <button className="button secondary" onClick={saveCurrentProgression} type="button">
+                <Save size={17} />
+                Guardar
+              </button>
+              <button className="button primary" onClick={() => addProgressionToSong()} type="button">
+                <Plus size={17} />
+                Agregar a cancion
+              </button>
+            </div>
+
             <div className="sample-status">
               <Volume2 size={15} />
               <span>
@@ -478,7 +735,10 @@ export function HarmonyPage() {
               <button
                 className="chord-tile"
                 key={item.roman}
-                onClick={() => playChord(item.chord)}
+                onClick={() => {
+                  playChord(item.chord);
+                  addChordToSong(item.chord);
+                }}
                 type="button"
                 disabled={audioState === 'loading'}
               >
@@ -489,6 +749,152 @@ export function HarmonyPage() {
             ))}
           </div>
         </aside>
+      </div>
+
+      <div className="harmony-lab">
+        <section className="modal-panel">
+          <div className="module-heading">
+            <div>
+              <span>Modos griegos</span>
+              <h3>{tonic} {activeGreekMode.name}</h3>
+              <p>{activeGreekMode.color}</p>
+            </div>
+          </div>
+
+          <div className="mode-chip-grid">
+            {GREEK_MODES.map((item) => (
+              <button
+                className={selectedGreekMode === item.id ? 'active' : ''}
+                key={item.id}
+                onClick={() => setSelectedGreekMode(item.id)}
+                type="button"
+              >
+                <strong>{item.name}</strong>
+                <span>{item.family}</span>
+              </button>
+            ))}
+          </div>
+
+          <p className="mode-lesson">{activeGreekMode.lesson}</p>
+
+          <div className="modal-scale-grid">
+            {modalScale.map((item) => (
+              <button
+                className={item.isCharacteristic ? 'mode-degree characteristic' : 'mode-degree'}
+                key={item.roman}
+                onClick={() => {
+                  playChord(item.chord);
+                  addChordToSong(item.chord);
+                }}
+                type="button"
+              >
+                <span>{item.roman}</span>
+                <strong>{item.chord}</strong>
+                <small>{item.note}</small>
+                {item.isCharacteristic && <em>color modal</em>}
+              </button>
+            ))}
+          </div>
+
+          {(savedProgressions.length > 0 || savedSongs.length > 0) && (
+            <div className="harmony-library">
+              {savedProgressions.length > 0 && (
+                <div className="saved-progressions">
+                  <span>Progresiones guardadas</span>
+                  {savedProgressions.map((progression) => (
+                    <article key={progression.id}>
+                      <button onClick={() => addProgressionToSong(progression.chords)} type="button">
+                        <strong>{progression.name}</strong>
+                        <small>{progression.tonic} · {progression.chords.join(' - ')}</small>
+                      </button>
+                      <button className="icon-button" onClick={() => deleteProgression(progression.id)} title="Borrar progresion" type="button">
+                        <Trash2 size={15} />
+                      </button>
+                    </article>
+                    
+                  ))}
+                </div>
+              )}
+
+              {savedSongs.length > 0 && (
+                <div className="saved-songs">
+                  <span>Canciones guardadas</span>
+                  {savedSongs.map((song) => (
+                    <article key={song.id}>
+                      <button onClick={() => loadSong(song)} type="button">
+                        <strong>{song.title}</strong>
+                        <small>{song.tonic} {song.mode} · {song.sections.length} partes</small>
+                      </button>
+                      <button className="icon-button" onClick={() => deleteSong(song.id)} title="Borrar cancion" type="button">
+                        <Trash2 size={15} />
+                      </button>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+
+        <section className="song-builder">
+          <div className="module-heading">
+            <div>
+              <span>Compositor</span>
+              <h3>Armar cancion</h3>
+              <p>Elegis una parte, agregas acordes o progresiones, y escuchas el boceto completo.</p>
+            </div>
+            <button className="icon-button sound-button" onClick={playSongSketch} title="Reproducir cancion" type="button">
+              <Play size={18} />
+            </button>
+          </div>
+
+          <div className="song-savebar">
+            <input value={songTitle} onChange={(event) => setSongTitle(event.target.value)} placeholder="Nombre de la cancion" />
+            <button className="button primary" onClick={saveCurrentSong} type="button">
+              <Save size={17} />
+              Guardar cancion
+            </button>
+          </div>
+
+          <div className="song-section-toolbar">
+            {SONG_SECTION_TYPES.map((type) => (
+              <button key={type} onClick={() => addSection(type)} type="button">
+                <Plus size={14} />
+                {type}
+              </button>
+            ))}
+          </div>
+
+          <div className="song-sections">
+            {songSections.map((section) => (
+              <article className={activeSongSection?.id === section.id ? 'song-section active' : 'song-section'} key={section.id}>
+                <button className="song-section-head" onClick={() => setActiveSongSectionId(section.id)} type="button">
+                  <strong>{section.name}</strong>
+                  <span>{section.chords.length} acordes</span>
+                </button>
+                <div className="song-chords">
+                  {section.chords.length === 0 && <small>Selecciona acordes o agrega una progresion.</small>}
+                  {section.chords.map((chord, index) => (
+                    <button key={`${section.id}-${chord}-${index}`} onClick={() => playChord(chord)} type="button">
+                      {chord}
+                    </button>
+                  ))}
+                </div>
+                <div className="song-section-actions">
+                  <button className="section-clear" onClick={() => clearSection(section.id)} type="button">
+                    <Trash2 size={14} />
+                    Limpiar
+                  </button>
+                  <button className="section-clear danger" onClick={() => deleteSection(section.id)} type="button">
+                    <Trash2 size={14} />
+                    Borrar parte
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+
+        </section>
       </div>
     </section>
   );

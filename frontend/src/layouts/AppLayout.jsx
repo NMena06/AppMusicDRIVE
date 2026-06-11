@@ -15,12 +15,12 @@ export function AppLayout() {
         <div className="brand">
           <BookMarked size={28} />
           <div>
-            <strong>Music Drive</strong>
+            <strong>Drive Nico</strong>
             <span>Biblioteca de estudio</span>
           </div>
         </div>
         <nav>
-          <NavLink to="/"><Gauge size={19} /> Dashboard</NavLink>
+          {/* <NavLink to="/"><Gauge size={19} /> Dashboard</NavLink> */}
           <NavLink to="/biblioteca"><Library size={19} /> Biblioteca</NavLink>
           <NavLink to="/kiko"><Music2 size={19} /> KIKO</NavLink>
           <NavLink to="/tabs"><Guitar size={19} /> GP Tabs</NavLink>

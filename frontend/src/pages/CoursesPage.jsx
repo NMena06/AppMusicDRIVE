@@ -1,7 +1,10 @@
-import { BookOpen, FileText, FolderOpen, Guitar, Library, PlaySquare } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { CheckCircle2, ExternalLink, FileText, FolderOpen, Guitar, Library, PlaySquare, X } from 'lucide-react';
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useDocuments } from '../hooks/useDocuments.js';
+import { touchHistory } from '../services/driveService.js';
+
+const AlphaTabViewer = lazy(() => import('../components/AlphaTabViewer.jsx').then((module) => ({ default: module.AlphaTabViewer })));
 
 const COURSE_ORDER = ['KIKO', 'Matheus Asato', 'Leandro Celleri', 'Nick Johnston', 'Libros y canciones', 'Libros', 'PDF sueltos', 'General'];
 const LESSON_ORDER = ['Introduccion', 'Dia 1', 'Dia 2', 'Dia 3', 'Dia 4', 'Ejercicios extras', 'Tics and Tricks', 'Download', 'Carpeta principal', 'PDF principal'];
@@ -41,8 +44,61 @@ function getMaterialLabel(document) {
   return 'PDF';
 }
 
+function readViewedMaterials() {
+  try {
+    return JSON.parse(localStorage.getItem('courseViewedMaterials')) || {};
+  } catch {
+    return {};
+  }
+}
+
+function CourseInlineViewer({ document, onClose, onMarkViewed }) {
+  if (!document) return null;
+
+  return (
+    <section className={`course-player ${document.tipo_documento}`}>
+      <div className="course-player-header">
+        <div>
+          <span>{getMaterialLabel(document)}</span>
+          <h4>{document.titulo}</h4>
+        </div>
+        <div className="course-player-actions">
+          <button className="button secondary" onClick={onMarkViewed} type="button">
+            <CheckCircle2 size={17} />
+            Marcar visto
+          </button>
+          {document.url_view && (
+            <a className="icon-button" href={document.url_view} target="_blank" rel="noreferrer" title="Abrir en Drive">
+              <ExternalLink size={18} />
+            </a>
+          )}
+          <button className="icon-button" onClick={onClose} title="Cerrar" type="button">
+            <X size={18} />
+          </button>
+        </div>
+      </div>
+
+      <div className="course-player-body">
+        {document.tipo_documento === 'video' && (
+          <video className="course-video-player" src={document.mediaUrl} controls playsInline />
+        )}
+        {document.tipo_documento === 'pdf' && (
+          <iframe className="course-pdf-player" src={document.previewUrl} title={document.titulo} allow="fullscreen" />
+        )}
+        {document.tipo_documento === 'guitar-pro' && (
+          <Suspense fallback={<div className="empty-state">Cargando tablatura...</div>}>
+            <AlphaTabViewer document={document} />
+          </Suspense>
+        )}
+      </div>
+    </section>
+  );
+}
+
 export function CoursesPage() {
   const { allDocuments, loading, error } = useDocuments({ sort: 'nombre' });
+  const [activeDocument, setActiveDocument] = useState(null);
+  const [viewedMaterials, setViewedMaterials] = useState(() => readViewedMaterials());
   const courses = useMemo(() => {
     const grouped = allDocuments.reduce((map, document) => {
       const courseName = document.seccion || 'General';
@@ -85,6 +141,26 @@ export function CoursesPage() {
       }))
       .sort((a, b) => sortByKnownOrder(LESSON_ORDER)(a.name, b.name));
   }, [activeCourse]);
+
+  useEffect(() => {
+    if (!activeDocument || !activeCourse?.documents.some((document) => document.id === activeDocument.id)) {
+      setActiveDocument(null);
+    }
+  }, [activeCourse, activeDocument]);
+
+  function openMaterial(document) {
+    setActiveDocument(document);
+    touchHistory(document);
+  }
+
+  function markViewed(document = activeDocument) {
+    if (!document) return;
+    setViewedMaterials((current) => {
+      const next = { ...current, [document.id]: new Date().toISOString() };
+      localStorage.setItem('courseViewedMaterials', JSON.stringify(next));
+      return next;
+    });
+  }
 
   return (
     <section className="page courses-page">
@@ -141,6 +217,12 @@ export function CoursesPage() {
               </div>
             </div>
 
+            <CourseInlineViewer
+              document={activeDocument}
+              onClose={() => setActiveDocument(null)}
+              onMarkViewed={() => markViewed(activeDocument)}
+            />
+
             <div className="lesson-stack">
               {lessons.map((lesson) => (
                 <article className="lesson-card" key={lesson.name}>
@@ -149,19 +231,24 @@ export function CoursesPage() {
                       <span>Modulo</span>
                       <h4>{lesson.name}</h4>
                     </div>
-                    <strong>{lesson.documents.length} materiales</strong>
+                    <strong>{lesson.documents.filter((document) => viewedMaterials[document.id]).length}/{lesson.documents.length} vistos</strong>
                   </div>
 
                   <div className="lesson-materials">
                     {lesson.documents.map((document) => (
-                      <Link className={`lesson-material ${document.tipo_documento}`} to={`/documentos/${document.id}`} key={document.id}>
+                      <button
+                        className={`lesson-material ${document.tipo_documento} ${activeDocument?.id === document.id ? 'active' : ''}`}
+                        onClick={() => openMaterial(document)}
+                        type="button"
+                        key={document.id}
+                      >
                         <span>{getMaterialIcon(document.tipo_documento)}</span>
                         <div>
                           <small>{getMaterialLabel(document)}</small>
                           <strong>{document.titulo}</strong>
                         </div>
-                        <BookOpen size={17} />
-                      </Link>
+                        {viewedMaterials[document.id] ? <CheckCircle2 size={17} /> : <small className="viewed-pill">Pendiente</small>}
+                      </button>
                     ))}
                   </div>
                 </article>
