@@ -8,8 +8,6 @@
     "install:all": "npm install && npm install --prefix frontend"
   },
   "dependencies": {
-    "@tonejs/piano": "^0.2.1",
-    "lucide-react": "^1.17.0",
-    "tone": "^15.1.22"
+    "lucide-react": "^1.17.0"
   }
 }
