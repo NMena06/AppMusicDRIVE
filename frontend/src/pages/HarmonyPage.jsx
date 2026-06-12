@@ -798,10 +798,7 @@ export function HarmonyPage() {
           <h2>Círculo de Quintas & Compositor</h2>
           <p>Explorá tonalidades, creá progresiones, componé melodías y armá canciones completas.</p>
         </div>
-        <div className="mode-switch" aria-label="Modo">
-          <button className={mode === 'major' ? 'active' : ''} onClick={() => changeMode('major')} type="button">Mayor</button>
-          <button className={mode === 'minor' ? 'active' : ''} onClick={() => changeMode('minor')} type="button">Menor</button>
-        </div>
+        
       </div>
 
       {/* TOOLBAR DE CONTROL GLOBAL */}
@@ -825,8 +822,13 @@ export function HarmonyPage() {
         
         {expandedSections.harmony && (
           <div className="harmony-workbench">
+            
             {/* CÍRCULO DE QUINTAS */}
             <div className="circle-panel">
+              <div className="mode-switch" aria-label="Modo">
+          <button className={mode === 'major' ? 'active' : ''} onClick={() => changeMode('major')} type="button">Mayor</button>
+          <button className={mode === 'minor' ? 'active' : ''} onClick={() => changeMode('minor')} type="button">Menor</button>
+        </div>
               <div className="fifths-circle" aria-label="Círculo de quintas">
                 <div className="circle-core">
                   <Music2 size={26} />
@@ -1096,6 +1098,125 @@ export function HarmonyPage() {
           </div>
         </div>
       )}
+            {/* SECCIÓN: MODOS GRIEGOS */}
+      <div className="harmony-section">
+        <button 
+          className="section-collapse-header"
+          onClick={() => toggleSection('modes')}
+          type="button"
+        >
+          <div className="section-header-content">
+            <Music2 size={20} />
+            <div>
+              <h2>Modos Griegos</h2>
+              <p>Explorá los 7 modos, sus colores y acordes característicos en {tonic}</p>
+            </div>
+          </div>
+          <div className="section-header-stats">
+            <span>{activeGreekMode.name}</span>
+            <span>{activeGreekMode.family}</span>
+          </div>
+          {expandedSections.modes ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+        </button>
+        
+        {expandedSections.modes && (
+          <div className="modes-workspace" style={{ padding: '16px', display: 'grid', gap: '14px' }}>
+            {/* Selector de modos */}
+            <div className="mode-chip-grid">
+              {GREEK_MODES.map((item) => (
+                <button
+                  className={selectedGreekMode === item.id ? 'active' : ''}
+                  key={item.id}
+                  onClick={() => setSelectedGreekMode(item.id)}
+                  type="button"
+                >
+                  <strong>{item.name}</strong>
+                  <span>{item.family}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Descripción del modo activo */}
+            <div className="mode-info-card" style={{ padding: '16px', border: '1px solid #e6e0d7', borderRadius: '10px', background: '#fffdf8' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+                <div style={{ 
+                  width: '44px', height: '44px', borderRadius: '8px', 
+                  background: 'rgba(249, 115, 22, 0.1)', color: 'var(--accent)',
+                  display: 'grid', placeItems: 'center', fontSize: '18px', fontWeight: '900'
+                }}>
+                  {activeGreekMode.roman[0]}
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '20px' }}>{tonic} {activeGreekMode.name}</h3>
+                  <p style={{ margin: '2px 0 0', color: 'var(--muted)', fontSize: '13px' }}>{activeGreekMode.color}</p>
+                </div>
+              </div>
+              <p className="mode-lesson">{activeGreekMode.lesson}</p>
+            </div>
+
+            {/* Escala modal con acordes */}
+            <div className="chords-section" style={{ padding: '14px', border: '1px solid #e6e6de', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.92)' }}>
+              <div className="chords-header">
+                <h3><Grid3X3 size={16} /> Acordes del modo {activeGreekMode.name}</h3>
+              </div>
+              <div className="modal-scale-grid">
+                {modalScale.map((item) => (
+                  <button
+                    className={item.isCharacteristic ? 'mode-degree characteristic' : 'mode-degree'}
+                    key={item.roman}
+                    onClick={() => { playChord(item.chord); addChordToSong(item.chord); }}
+                    type="button"
+                  >
+                    <span>{item.roman}</span>
+                    <strong>{item.chord}</strong>
+                    <small>{item.note}</small>
+                    {item.isCharacteristic && <em>color modal</em>}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Progresiones y canciones guardadas */}
+            {(savedProgressions.length > 0 || savedSongs.length > 0) && (
+              <div className="harmony-library">
+                {savedProgressions.length > 0 && (
+                  <div className="saved-progressions">
+                    <span>Progresiones guardadas</span>
+                    {savedProgressions.map((progression) => (
+                      <article key={progression.id}>
+                        <button onClick={() => addProgressionToSong(progression.chords)} type="button">
+                          <strong>{progression.name}</strong>
+                          <small>{progression.tonic} · {progression.chords.join(' - ')}</small>
+                        </button>
+                        <button className="icon-button" onClick={() => deleteProgression(progression.id)} title="Borrar progresion" type="button">
+                          <Trash2 size={15} />
+                        </button>
+                      </article>
+                    ))}
+                  </div>
+                )}
+
+                {savedSongs.length > 0 && (
+                  <div className="saved-songs">
+                    <span>Canciones guardadas</span>
+                    {savedSongs.map((song) => (
+                      <article key={song.id}>
+                        <button onClick={() => loadSong(song)} type="button">
+                          <strong>{song.title}</strong>
+                          <small>{song.tonic} {song.mode} · {song.sections.length} partes</small>
+                        </button>
+                        <button className="icon-button" onClick={() => deleteSong(song.id)} title="Borrar cancion" type="button">
+                          <Trash2 size={15} />
+                        </button>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
             <div className="composer-toolbar">
               <div className="instrument-switch">
