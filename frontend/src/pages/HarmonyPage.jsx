@@ -291,9 +291,10 @@ export function HarmonyPage() {
   const [expandedSections, setExpandedSections] = useState({
     harmony: true,
     composer: true,
+    modes: true,
     melody: true,
-    mixer: false,
-    effects: false,
+    mixer: true,
+    effects: true,
   });
   
   // Estados de piano roll
@@ -365,13 +366,22 @@ export function HarmonyPage() {
     });
   }, [normalizedSongSections]);
   
-  const melodyChordChoices = arrangementChords.length > 0 ? arrangementChords : activeChords.map((item) => item.chord);
+  const activeSectionChords = useMemo(() => {
+    const seen = new Set();
+    return (activeSongSection?.chords || []).filter((chord) => {
+      if (seen.has(chord)) return false;
+      seen.add(chord);
+      return true;
+    });
+  }, [activeSongSection]);
+
+  const melodyChordChoices = activeSectionChords.length > 0 ? activeSectionChords : activeChords.map((item) => item.chord);
   const selectedMelodyChord = melodyChordChoices.includes(melodyChord) ? melodyChord : melodyChordChoices[0] || tonic;
   const selectedMelodyNotes = chordNotes(selectedMelodyChord, chordInversion);
 
   // Funciones de toggle para secciones
   const toggleSection = (section) => {
-    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
+    setExpandedSections(prev => ({ ...prev, [section]: true }));
   };
 
   // Historial undo/redo
@@ -578,7 +588,7 @@ export function HarmonyPage() {
   }
 
   function saveCurrentSong() {
-    const song = { id: crypto.randomUUID(), title: songTitle.trim() || 'Cancion sin titulo', tonic, mode: activeGreekMode.name, bpm: songBpm, sections: songSections.map(normalizeSongSection), createdAt: new Date().toISOString() };
+    const song = { id: crypto.randomUUID(), title: songTitle.trim() || 'Cancion sin titulo', tonic, mode: activeGreekMode.name, bpm: songBpm, instrument: songInstrument, drumVolume: songDrumVolume, sections: songSections.map(normalizeSongSection), createdAt: new Date().toISOString() };
     setSavedSongs((current) => { const next = [song, ...current.filter((item) => item.title !== song.title)].slice(0, 20); writeLocalList('savedHarmonySongs', next); return next; });
   }
 
@@ -586,8 +596,11 @@ export function HarmonyPage() {
     const normalizedSections = (song.sections || []).map(normalizeSongSection);
     setSongTitle(song.title);
     setSongBpm(clampBpm(song.bpm || songBpm));
+    if (song.instrument) changeSongInstrument(song.instrument);
+    if (typeof song.drumVolume === 'number') changeSongDrumVolume(song.drumVolume);
     setSongSections(normalizedSections);
     setActiveSongSectionId(normalizedSections[0]?.id || '');
+    setMelodyChord('');
     writeLocalList('harmonySongSections', normalizedSections);
     writeLocalList('harmonySongBpm', clampBpm(song.bpm || songBpm));
   }
@@ -595,14 +608,14 @@ export function HarmonyPage() {
   function deleteSong(id) { setSavedSongs((current) => { const next = current.filter((song) => song.id !== id); writeLocalList('savedHarmonySongs', next); return next; }); }
 
   function exportCurrentSong() {
-    const song = { title: songTitle.trim() || 'Cancion sin titulo', tonic, mode: activeGreekMode.name, bpm: songBpm, sections: songSections.map(normalizeSongSection), exportedAt: new Date().toISOString(), version: '1.0' };
+    const song = { title: songTitle.trim() || 'Cancion sin titulo', tonic, mode: activeGreekMode.name, bpm: songBpm, instrument: songInstrument, drumVolume: songDrumVolume, sections: songSections.map(normalizeSongSection), exportedAt: new Date().toISOString(), app: 'NMENA Studio', version: '1.1' };
     const blob = new Blob([JSON.stringify(song, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = `${song.title.replace(/\s+/g, '_')}.harmony.json`; a.click(); URL.revokeObjectURL(url);
   }
 
   function exportAllSongs() {
-    const data = { songs: savedSongs, exportedAt: new Date().toISOString(), version: '1.0' };
+    const data = { songs: savedSongs.map((song) => ({ ...song, sections: (song.sections || []).map(normalizeSongSection) })), exportedAt: new Date().toISOString(), app: 'NMENA Studio', version: '1.1' };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = 'todas_mis_canciones.harmony.json'; a.click(); URL.revokeObjectURL(url);
@@ -622,6 +635,57 @@ export function HarmonyPage() {
       } catch (err) { alert('Error: ' + err.message); }
     };
     reader.readAsText(file); event.target.value = '';
+  }
+
+  function handleImportHarmonySong(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+
+        if (Array.isArray(data.songs)) {
+          const importedSongs = data.songs
+            .filter((song) => song.title && Array.isArray(song.sections))
+            .map((song) => ({
+              ...song,
+              id: song.id || crypto.randomUUID(),
+              sections: song.sections.map(normalizeSongSection),
+            }));
+
+          setSavedSongs((current) => {
+            const next = [
+              ...importedSongs,
+              ...current.filter((song) => !importedSongs.some((item) => item.title === song.title)),
+            ].slice(0, 20);
+            writeLocalList('savedHarmonySongs', next);
+            return next;
+          });
+          alert(`${importedSongs.length} canciones importadas.`);
+        } else if (data.title && Array.isArray(data.sections)) {
+          const imported = {
+            ...data,
+            id: data.id || crypto.randomUUID(),
+            sections: data.sections.map(normalizeSongSection),
+          };
+          loadSong(imported);
+          setSavedSongs((current) => {
+            const next = [imported, ...current.filter((song) => song.title !== imported.title)].slice(0, 20);
+            writeLocalList('savedHarmonySongs', next);
+            return next;
+          });
+          alert(`Cancion "${data.title}" cargada.`);
+        } else {
+          alert('Formato invalido.');
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
   }
 
   // Funciones de audio
@@ -740,6 +804,7 @@ export function HarmonyPage() {
     if (isSongPlaying) { stopSongSketch(); return; }
     const { sampler, Tone } = await ensurePiano();
     const guitar = songInstrument === 'guitar' ? (await ensureGuitar()).guitar : null;
+    await ensureBass();
     const drums = ensureDrums(Tone);
     const effects = setupEffects(Tone);
     const beatSeconds = 60 / songBpm;
@@ -756,17 +821,17 @@ export function HarmonyPage() {
       section.chords.forEach((chord, index) => {
         const chordSpacing = sectionBeats / Math.max(section.chords.length, 1);
         Tone.Transport.schedule((time) => {
-          triggerHarmonyChord({ sampler, guitar }, Tone, chord, beatSeconds * Math.max(1.4, chordSpacing * 0.82), time, 0.7);
+          triggerHarmonyChord({ sampler, guitar }, Tone, chord, beatSeconds * Math.max(1.4, chordSpacing * 0.82), time, chordVolume);
           const bassNote = chordNotes(chord)[0].replace(/\d/, (n) => parseInt(n) - 1);
-          bassRef.current?.triggerAttackRelease(bassNote, beatSeconds * Math.max(1.4, chordSpacing * 0.82), time, 0.55);
+          bassRef.current?.triggerAttackRelease(bassNote, beatSeconds * Math.max(1.4, chordSpacing * 0.82), time, bassVolume);
         }, cursor + index * chordSpacing * beatSeconds);
       });
 
       section.melody?.forEach((item, noteIndex) => {
         const spacing = sectionBeats / Math.max(section.melody.length, 1);
-        const duration = item.duration || spacing < 0.5 ? '16n' : '8n';
+        const duration = item.duration || (spacing < 0.5 ? '16n' : '8n');
         Tone.Transport.schedule((time) => {
-          const vel = item.velocity || 0.62;
+          const vel = (item.velocity || 0.62) * melodyVolume;
           if (songInstrument === 'guitar' && guitar) { guitar.triggerAttackRelease(item.note, duration, time, vel); }
           else { sampler.triggerAttackRelease(item.note, duration, time, vel); }
         }, cursor + noteIndex * spacing * beatSeconds);
@@ -786,6 +851,56 @@ export function HarmonyPage() {
     setIsSongPlaying(true);
     Tone.Transport.start('+0.03');
     songEndTimerRef.current = setTimeout(() => { stopSongSketch(); }, Math.max(500, cursor * 1000 + 450));
+  }
+
+  async function playSectionSketch(sectionToPlay) {
+    const section = normalizeSongSection(sectionToPlay);
+    const { sampler, Tone } = await ensurePiano();
+    const guitar = songInstrument === 'guitar' ? (await ensureGuitar()).guitar : null;
+    await ensureBass();
+    const drums = ensureDrums(Tone);
+    const beatSeconds = 60 / songBpm;
+    const ts = TIME_SIGNATURES.find((item) => item.id === section.timeSignature) || timeSig;
+    const sectionBeats = Math.max(section.bars * ts.beats, section.chords.length * 2, 4);
+    const pattern = DRUM_PATTERNS.find((item) => item.id === section.drumPattern) || DRUM_PATTERNS[0];
+
+    stopSongSketch();
+    setActiveSongSectionId(section.id);
+    drums.bus.gain.value = songDrumVolume * 1.35;
+    Tone.Transport.bpm.value = songBpm;
+
+    section.chords.forEach((chord, index) => {
+      const chordSpacing = sectionBeats / Math.max(section.chords.length, 1);
+      Tone.Transport.schedule((time) => {
+        triggerHarmonyChord({ sampler, guitar }, Tone, chord, beatSeconds * Math.max(1.4, chordSpacing * 0.82), time, chordVolume);
+        const bassNote = chordNotes(chord)[0].replace(/\d/, (n) => parseInt(n) - 1);
+        bassRef.current?.triggerAttackRelease(bassNote, beatSeconds * Math.max(1.4, chordSpacing * 0.82), time, bassVolume);
+      }, index * chordSpacing * beatSeconds);
+    });
+
+    section.melody.forEach((item, noteIndex) => {
+      const spacing = sectionBeats / Math.max(section.melody.length, 1);
+      const duration = item.duration || (spacing < 0.5 ? '16n' : '8n');
+      Tone.Transport.schedule((time) => {
+        const vel = (item.velocity || 0.62) * melodyVolume;
+        if (songInstrument === 'guitar' && guitar) guitar.triggerAttackRelease(item.note, duration, time, vel);
+        else sampler.triggerAttackRelease(item.note, duration, time, vel);
+      }, noteIndex * spacing * beatSeconds);
+    });
+
+    if (pattern.steps.length > 0) {
+      for (let beat = 0; beat < sectionBeats; beat += ts.beats) {
+        pattern.steps.forEach((step) => {
+          Tone.Transport.schedule((time) => {
+            triggerDrum(drums, step.sound, time, step.velocity, section.drumIntensity);
+          }, (beat + step.beat) * beatSeconds);
+        });
+      }
+    }
+
+    setIsSongPlaying(true);
+    Tone.Transport.start('+0.03');
+    songEndTimerRef.current = setTimeout(() => { stopSongSketch(); }, Math.max(500, sectionBeats * beatSeconds * 1000 + 450));
   }
 
   // ============ RENDER ============
@@ -1062,13 +1177,16 @@ export function HarmonyPage() {
           <button className="button secondary" onClick={exportCurrentSong} type="button">
             <Download size={16} /> Exportar
           </button>
+          <button className="button secondary" onClick={exportAllSongs} type="button">
+            <Copy size={16} /> Todo
+          </button>
           <button className="button secondary" onClick={() => fileInputRef.current?.click()} type="button">
             <Upload size={16} /> Importar
           </button>
           <button className="button primary" onClick={saveCurrentSong} type="button">
             <Save size={16} /> Guardar
           </button>
-          <input ref={fileInputRef} type="file" accept=".json,.harmony.json" onChange={handleImportSong} style={{ display: 'none' }} />
+          <input ref={fileInputRef} type="file" accept=".json,.harmony.json" onChange={handleImportHarmonySong} style={{ display: 'none' }} />
         </div>
       </div>
 
@@ -1323,6 +1441,12 @@ export function HarmonyPage() {
                   
                   {/* Acciones de sección */}
                   <div className="song-section-actions">
+                    <button className="section-clear" onClick={() => playSectionSketch(section)} type="button">
+                      <Play size={14} /> Escuchar
+                    </button>
+                    <button className="section-clear" onClick={() => { setActiveSongSectionId(section.id); setMelodyChord(''); setExpandedSections((current) => ({ ...current, melody: true })); }} type="button">
+                      <Pencil size={14} /> Melodia
+                    </button>
                     <button className="section-clear" onClick={() => clearSection(section.id)} type="button">
                       <Eraser size={14} /> Limpiar
                     </button>
@@ -1358,6 +1482,23 @@ export function HarmonyPage() {
           <div className="melody-workspace">
             {/* Controles de melodía */}
             <div className="melody-controls">
+              <div className="melody-section-focus">
+                <span>Melodia para</span>
+                <div className="section-pill-row">
+                  {normalizedSongSections.map((section) => (
+                    <button
+                      className={activeSongSection?.id === section.id ? 'active' : ''}
+                      key={`melody-section-${section.id}`}
+                      onClick={() => { setActiveSongSectionId(section.id); setMelodyChord(''); }}
+                      type="button"
+                    >
+                      {section.name}
+                      <small>{section.melody.length} notas</small>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="melody-chord-selector">
                 <label>
                   <span>Acorde base</span>

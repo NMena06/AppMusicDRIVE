@@ -1,4 +1,4 @@
-import { BookMarked, CircleDot, FolderSync, Gauge, Guitar, Heart, Library, LogOut, Music2, PlaySquare, Timer } from 'lucide-react';
+import { CircleDot, FolderSync, Guitar, Heart, Library, LogOut, Music2, PlaySquare, Timer } from 'lucide-react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { FloatingMetronome } from '../components/FloatingMetronome.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -13,10 +13,10 @@ export function AppLayout() {
     <div className={isViewer ? 'app-shell viewer-shell' : 'app-shell'}>
       <aside className="sidebar">
         <div className="brand">
-          <BookMarked size={28} />
+          <img className="brand-mark" src="/nmena-icon.svg" alt="" />
           <div>
-            <strong>Drive Nico</strong>
-            <span>Biblioteca de estudio</span>
+            <strong>NMENA Studio</strong>
+            <span>Practica musical</span>
           </div>
         </div>
         <nav>
