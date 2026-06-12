@@ -805,116 +805,7 @@ export function HarmonyPage() {
       </div>
 
       {/* TOOLBAR DE CONTROL GLOBAL */}
-      <div className="harmony-toolbar">
-        <div className="toolbar-left">
-          <div className="toolbar-group">
-            <button className="icon-button" onClick={undo} title="Deshacer (Ctrl+Z)" disabled={historyIndex <= 0}>
-              <Undo size={16} />
-            </button>
-            <button className="icon-button" onClick={redo} title="Rehacer (Ctrl+Y)" disabled={historyIndex >= history.length - 1}>
-              <Redo size={16} />
-            </button>
-            <button className="icon-button" onClick={() => setShowHistory(!showHistory)} title="Historial">
-              <History size={16} />
-            </button>
-          </div>
-          
-          <div className="toolbar-divider" />
-          
-          <div className="toolbar-group">
-            <span className="toolbar-label">Canción:</span>
-            <input 
-              className="toolbar-input" 
-              value={songTitle} 
-              onChange={(e) => setSongTitle(e.target.value)} 
-              placeholder="Mi canción" 
-            />
-          </div>
-          
-          <div className="toolbar-divider" />
-          
-          <div className="toolbar-group">
-            <span className="toolbar-label">BPM:</span>
-            <input 
-              className="toolbar-input small" 
-              type="number" 
-              min="40" 
-              max="220" 
-              value={songBpm} 
-              onChange={(e) => { 
-                const next = clampBpm(e.target.value); 
-                setSongBpm(next); 
-                writeLocalList('harmonySongBpm', next); 
-              }} 
-            />
-          </div>
-          
-          <div className="toolbar-group">
-            <span className="toolbar-label">Compás:</span>
-            <select 
-              className="toolbar-select"
-              value={selectedTimeSignature} 
-              onChange={(e) => setSelectedTimeSignature(e.target.value)}
-            >
-              {TIME_SIGNATURES.map(ts => (
-                <option key={ts.id} value={ts.id}>{ts.id}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-        
-        <div className="toolbar-center">
-          <button 
-            className="play-button" 
-            onClick={playSongSketch} 
-            title="Reproducir/Pausar (Espacio)"
-          >
-            {isSongPlaying ? <Square size={20} /> : <Play size={20} />}
-            <span>{isSongPlaying ? 'Detener' : 'Reproducir Canción'}</span>
-          </button>
-        </div>
-        
-        <div className="toolbar-right">
-          <button className="button secondary" onClick={exportCurrentSong} type="button">
-            <Download size={16} /> Exportar
-          </button>
-          <button className="button secondary" onClick={() => fileInputRef.current?.click()} type="button">
-            <Upload size={16} /> Importar
-          </button>
-          <button className="button primary" onClick={saveCurrentSong} type="button">
-            <Save size={16} /> Guardar
-          </button>
-          <input ref={fileInputRef} type="file" accept=".json,.harmony.json" onChange={handleImportSong} style={{ display: 'none' }} />
-        </div>
-      </div>
-
-      {/* PANEL DE HISTORIAL */}
-      {showHistory && (
-        <div className="history-panel">
-          <div className="panel-header">
-            <h3><History size={16} /> Historial de cambios</h3>
-            <button onClick={() => setShowHistory(false)}>×</button>
-          </div>
-          <div className="history-list">
-            {history.length === 0 && <p className="empty-text">No hay cambios todavía.</p>}
-            {history.map((_, idx) => (
-              <button
-                key={idx}
-                className={idx === historyIndex ? 'active' : ''}
-                onClick={() => { 
-                  setHistoryIndex(idx); 
-                  setSongSections(history[idx]); 
-                  writeLocalList('harmonySongSections', history[idx]); 
-                }}
-                type="button"
-              >
-                Versión {idx + 1} {idx === historyIndex ? '(actual)' : ''}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
+      
       {/* SECCIÓN 1: HERRAMIENTAS DE ARMONÍA */}
       <div className="harmony-section">
         <button 
@@ -1068,8 +959,10 @@ export function HarmonyPage() {
         )}
       </div>
 
+
       {/* SECCIÓN 2: COMPOSITOR DE CANCIÓN */}
       <div className="harmony-section">
+        
         <button 
           className="section-collapse-header"
           onClick={() => toggleSection('composer')}
@@ -1091,8 +984,119 @@ export function HarmonyPage() {
         </button>
         
         {expandedSections.composer && (
+          
           <div className="composer-workspace">
             {/* BARRA DE HERRAMIENTAS DEL COMPOSITOR */}
+            <div className="harmony-toolbar">
+        <div className="toolbar-left">
+          <div className="toolbar-group">
+            <button className="icon-button" onClick={undo} title="Deshacer (Ctrl+Z)" disabled={historyIndex <= 0}>
+              <Undo size={16} />
+            </button>
+            <button className="icon-button" onClick={redo} title="Rehacer (Ctrl+Y)" disabled={historyIndex >= history.length - 1}>
+              <Redo size={16} />
+            </button>
+            <button className="icon-button" onClick={() => setShowHistory(!showHistory)} title="Historial">
+              <History size={16} />
+            </button>
+          </div>
+          
+          <div className="toolbar-divider" />
+          
+          <div className="toolbar-group">
+            <span className="toolbar-label">Canción:</span>
+            <input 
+              className="toolbar-input" 
+              value={songTitle} 
+              onChange={(e) => setSongTitle(e.target.value)} 
+              placeholder="Mi canción" 
+            />
+          </div>
+          
+          <div className="toolbar-divider" />
+          
+          <div className="toolbar-group">
+            <span className="toolbar-label">BPM:</span>
+            <input 
+              className="toolbar-input small" 
+              type="number" 
+              min="40" 
+              max="220" 
+              value={songBpm} 
+              onChange={(e) => { 
+                const next = clampBpm(e.target.value); 
+                setSongBpm(next); 
+                writeLocalList('harmonySongBpm', next); 
+              }} 
+            />
+          </div>
+          
+          <div className="toolbar-group">
+            <span className="toolbar-label">Compás:</span>
+            <select 
+              className="toolbar-select"
+              value={selectedTimeSignature} 
+              onChange={(e) => setSelectedTimeSignature(e.target.value)}
+            >
+              {TIME_SIGNATURES.map(ts => (
+                <option key={ts.id} value={ts.id}>{ts.id}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+        
+        <div className="toolbar-center">
+          <button 
+            className="play-button" 
+            onClick={playSongSketch} 
+            title="Reproducir/Pausar (Espacio)"
+          >
+            {isSongPlaying ? <Square size={20} /> : <Play size={20} />}
+            <span>{isSongPlaying ? 'Detener' : 'Reproducir Canción'}</span>
+          </button>
+        </div>
+        
+        <div className="toolbar-right">
+          <button className="button secondary" onClick={exportCurrentSong} type="button">
+            <Download size={16} /> Exportar
+          </button>
+          <button className="button secondary" onClick={() => fileInputRef.current?.click()} type="button">
+            <Upload size={16} /> Importar
+          </button>
+          <button className="button primary" onClick={saveCurrentSong} type="button">
+            <Save size={16} /> Guardar
+          </button>
+          <input ref={fileInputRef} type="file" accept=".json,.harmony.json" onChange={handleImportSong} style={{ display: 'none' }} />
+        </div>
+      </div>
+
+      {/* PANEL DE HISTORIAL */}
+      {showHistory && (
+        <div className="history-panel">
+          <div className="panel-header">
+            <h3><History size={16} /> Historial de cambios</h3>
+            <button onClick={() => setShowHistory(false)}>×</button>
+          </div>
+          <div className="history-list">
+            {history.length === 0 && <p className="empty-text">No hay cambios todavía.</p>}
+            {history.map((_, idx) => (
+              <button
+                key={idx}
+                className={idx === historyIndex ? 'active' : ''}
+                onClick={() => { 
+                  setHistoryIndex(idx); 
+                  setSongSections(history[idx]); 
+                  writeLocalList('harmonySongSections', history[idx]); 
+                }}
+                type="button"
+              >
+                Versión {idx + 1} {idx === historyIndex ? '(actual)' : ''}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
             <div className="composer-toolbar">
               <div className="instrument-switch">
                 <button className={songInstrument === 'piano' ? 'active' : ''} onClick={() => changeSongInstrument('piano')}>
