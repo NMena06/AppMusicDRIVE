@@ -1,4 +1,4 @@
-import { LoaderCircle, Music2, Play, Plus, Save, Shuffle, Trash2, Volume2 } from 'lucide-react';
+import { Guitar, Keyboard, LoaderCircle, Music2, Play, Plus, Save, Shuffle, Square, Trash2, Volume2 } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 
 const CIRCLE_KEYS = [
@@ -146,6 +146,172 @@ const GREEK_MODES = [
 ];
 
 const SONG_SECTION_TYPES = ['Intro', 'Verso', 'Pre-estribillo', 'Estribillo', 'Puente', 'Solo', 'Outro'];
+const DRUM_PATTERNS = [
+  { id: 'none', name: 'Sin bateria', steps: [] },
+  {
+    id: 'basic',
+    name: 'Base limpia',
+    steps: [
+      { beat: 0, sound: 'kick', velocity: 0.9 },
+      { beat: 1, sound: 'hat', velocity: 0.35 },
+      { beat: 2, sound: 'snare', velocity: 0.75 },
+      { beat: 3, sound: 'hat', velocity: 0.35 },
+    ],
+  },
+  {
+    id: 'pop',
+    name: 'Pop 4/4',
+    steps: [
+      { beat: 0, sound: 'kick', velocity: 0.9 },
+      { beat: 0.5, sound: 'hat', velocity: 0.3 },
+      { beat: 1, sound: 'snare', velocity: 0.75 },
+      { beat: 1.5, sound: 'hat', velocity: 0.28 },
+      { beat: 2, sound: 'kick', velocity: 0.72 },
+      { beat: 2.5, sound: 'hat', velocity: 0.32 },
+      { beat: 3, sound: 'snare', velocity: 0.82 },
+      { beat: 3.5, sound: 'openHat', velocity: 0.28 },
+    ],
+  },
+  {
+    id: 'rock',
+    name: 'Rock fuerte',
+    steps: [
+      { beat: 0, sound: 'kick', velocity: 1 },
+      { beat: 0.5, sound: 'hat', velocity: 0.32 },
+      { beat: 1, sound: 'snare', velocity: 0.92 },
+      { beat: 1.5, sound: 'hat', velocity: 0.32 },
+      { beat: 2, sound: 'kick', velocity: 0.94 },
+      { beat: 2.5, sound: 'hat', velocity: 0.34 },
+      { beat: 3, sound: 'snare', velocity: 0.96 },
+      { beat: 3.5, sound: 'openHat', velocity: 0.42 },
+    ],
+  },
+  {
+    id: 'balada',
+    name: 'Balada',
+    steps: [
+      { beat: 0, sound: 'kick', velocity: 0.75 },
+      { beat: 1, sound: 'hat', velocity: 0.22 },
+      { beat: 2, sound: 'snare', velocity: 0.58 },
+      { beat: 3, sound: 'hat', velocity: 0.24 },
+    ],
+  },
+  {
+    id: 'funk',
+    name: 'Funk suave',
+    steps: [
+      { beat: 0, sound: 'kick', velocity: 0.82 },
+      { beat: 0.5, sound: 'hat', velocity: 0.28 },
+      { beat: 0.75, sound: 'ghostSnare', velocity: 0.24 },
+      { beat: 1, sound: 'snare', velocity: 0.72 },
+      { beat: 1.25, sound: 'hat', velocity: 0.3 },
+      { beat: 2, sound: 'kick', velocity: 0.78 },
+      { beat: 2.75, sound: 'hat', velocity: 0.32 },
+      { beat: 3, sound: 'snare', velocity: 0.78 },
+      { beat: 3.5, sound: 'hat', velocity: 0.28 },
+    ],
+  },
+  {
+    id: 'reggae',
+    name: 'Reggae offbeat',
+    steps: [
+      { beat: 0.5, sound: 'hat', velocity: 0.35 },
+      { beat: 1, sound: 'rim', velocity: 0.68 },
+      { beat: 1.5, sound: 'hat', velocity: 0.35 },
+      { beat: 2.5, sound: 'hat', velocity: 0.35 },
+      { beat: 3, sound: 'kick', velocity: 0.78 },
+      { beat: 3, sound: 'rim', velocity: 0.54 },
+      { beat: 3.5, sound: 'openHat', velocity: 0.28 },
+    ],
+  },
+  {
+    id: 'latin',
+    name: 'Latin pop',
+    steps: [
+      { beat: 0, sound: 'kick', velocity: 0.84 },
+      { beat: 0.75, sound: 'hat', velocity: 0.28 },
+      { beat: 1.5, sound: 'snare', velocity: 0.58 },
+      { beat: 2, sound: 'kick', velocity: 0.76 },
+      { beat: 2.5, sound: 'hat', velocity: 0.3 },
+      { beat: 3, sound: 'clap', velocity: 0.58 },
+      { beat: 3.5, sound: 'hat', velocity: 0.3 },
+    ],
+  },
+  {
+    id: 'halfTime',
+    name: 'Half time',
+    steps: [
+      { beat: 0, sound: 'kick', velocity: 0.92 },
+      { beat: 0.5, sound: 'hat', velocity: 0.3 },
+      { beat: 1.5, sound: 'hat', velocity: 0.28 },
+      { beat: 2, sound: 'snare', velocity: 0.95 },
+      { beat: 2.5, sound: 'hat', velocity: 0.3 },
+      { beat: 3.5, sound: 'openHat', velocity: 0.32 },
+    ],
+  },
+  {
+    id: 'build',
+    name: 'Build up',
+    steps: [
+      { beat: 0, sound: 'kick', velocity: 0.74 },
+      { beat: 0.5, sound: 'hat', velocity: 0.28 },
+      { beat: 1, sound: 'snare', velocity: 0.54 },
+      { beat: 1.5, sound: 'hat', velocity: 0.32 },
+      { beat: 2, sound: 'kick', velocity: 0.72 },
+      { beat: 2.5, sound: 'hat', velocity: 0.34 },
+      { beat: 3, sound: 'snare', velocity: 0.6 },
+      { beat: 3.25, sound: 'hat', velocity: 0.34 },
+      { beat: 3.5, sound: 'hat', velocity: 0.36 },
+      { beat: 3.75, sound: 'openHat', velocity: 0.42 },
+    ],
+  },
+  {
+    id: 'disco',
+    name: 'Disco pulse',
+    steps: [
+      { beat: 0, sound: 'kick', velocity: 0.92 },
+      { beat: 0.5, sound: 'openHat', velocity: 0.26 },
+      { beat: 1, sound: 'kick', velocity: 0.82 },
+      { beat: 1, sound: 'snare', velocity: 0.62 },
+      { beat: 1.5, sound: 'openHat', velocity: 0.28 },
+      { beat: 2, sound: 'kick', velocity: 0.9 },
+      { beat: 2.5, sound: 'openHat', velocity: 0.28 },
+      { beat: 3, sound: 'kick', velocity: 0.82 },
+      { beat: 3, sound: 'snare', velocity: 0.68 },
+      { beat: 3.5, sound: 'openHat', velocity: 0.3 },
+    ],
+  },
+  {
+    id: 'shuffle',
+    name: 'Shuffle',
+    steps: [
+      { beat: 0, sound: 'kick', velocity: 0.86 },
+      { beat: 0.66, sound: 'hat', velocity: 0.28 },
+      { beat: 1, sound: 'snare', velocity: 0.68 },
+      { beat: 1.66, sound: 'hat', velocity: 0.26 },
+      { beat: 2, sound: 'kick', velocity: 0.72 },
+      { beat: 2.66, sound: 'hat', velocity: 0.3 },
+      { beat: 3, sound: 'snare', velocity: 0.76 },
+      { beat: 3.66, sound: 'openHat', velocity: 0.3 },
+    ],
+  },
+  {
+    id: 'trap',
+    name: 'Trap lento',
+    steps: [
+      { beat: 0, sound: 'kick', velocity: 0.88 },
+      { beat: 0.5, sound: 'hat', velocity: 0.24 },
+      { beat: 0.75, sound: 'hat', velocity: 0.18 },
+      { beat: 1, sound: 'hat', velocity: 0.23 },
+      { beat: 1.5, sound: 'snare', velocity: 0.8 },
+      { beat: 2.25, sound: 'kick', velocity: 0.74 },
+      { beat: 2.5, sound: 'hat', velocity: 0.24 },
+      { beat: 2.75, sound: 'hat', velocity: 0.18 },
+      { beat: 3, sound: 'hat', velocity: 0.25 },
+      { beat: 3.5, sound: 'snare', velocity: 0.86 },
+    ],
+  },
+];
 
 const SCALE_DEGREES = {
   major: {
@@ -266,6 +432,20 @@ function writeLocalList(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
+function normalizeSongSection(section) {
+  return {
+    ...section,
+    chords: Array.isArray(section.chords) ? section.chords : [],
+    bars: Math.min(16, Math.max(1, Number(section.bars) || 4)),
+    drumPattern: section.drumPattern || 'none',
+    drumIntensity: Math.min(1, Math.max(0.25, Number(section.drumIntensity) || 0.75)),
+  };
+}
+
+function clampBpm(value) {
+  return Math.min(220, Math.max(40, Number(value) || 90));
+}
+
 function progressionChords(scale, progression) {
   return progression.degrees.map((degree) => scale[degree - 1]);
 }
@@ -301,17 +481,27 @@ export function HarmonyPage() {
   const [selectedGreekMode, setSelectedGreekMode] = useState('ionian');
   const [savedProgressions, setSavedProgressions] = useState(() => readLocalList('savedHarmonyProgressions', []));
   const [songTitle, setSongTitle] = useState('Mi cancion');
+  const [progressionBpm, setProgressionBpm] = useState(() => readLocalList('harmonyProgressionBpm', 90));
+  const [songBpm, setSongBpm] = useState(() => readLocalList('harmonySongBpm', 90));
+  const [songInstrument, setSongInstrument] = useState(() => readLocalList('harmonySongInstrument', 'piano'));
+  const [songDrumVolume, setSongDrumVolume] = useState(() => readLocalList('harmonySongDrumVolume', 0.85));
+  const [isSongPlaying, setIsSongPlaying] = useState(false);
   const [savedSongs, setSavedSongs] = useState(() => readLocalList('savedHarmonySongs', []));
   const [songSections, setSongSections] = useState(() => readLocalList('harmonySongSections', [
-    { id: crypto.randomUUID(), name: 'Intro', chords: [] },
-    { id: crypto.randomUUID(), name: 'Verso', chords: [] },
-    { id: crypto.randomUUID(), name: 'Estribillo', chords: [] },
+    { id: crypto.randomUUID(), name: 'Intro', chords: [], bars: 4, drumPattern: 'none', drumIntensity: 0.55 },
+    { id: crypto.randomUUID(), name: 'Verso', chords: [], bars: 8, drumPattern: 'basic', drumIntensity: 0.65 },
+    { id: crypto.randomUUID(), name: 'Estribillo', chords: [], bars: 8, drumPattern: 'pop', drumIntensity: 0.9 },
   ]));
   const [activeSongSectionId, setActiveSongSectionId] = useState(() => songSections[0]?.id || '');
+  const [melodyChord, setMelodyChord] = useState('');
+  const [melodyNotes, setMelodyNotes] = useState(() => readLocalList('harmonyMelodyNotes', []));
 
   const samplerRef = useRef(null);
+  const guitarRef = useRef(null);
   const toneRef = useRef(null);
   const loadingRef = useRef(null);
+  const drumsRef = useRef(null);
+  const songEndTimerRef = useRef(null);
 
   const selected = CIRCLE_KEYS[selectedIndex];
   const tonic = mode === 'major' ? selected.major : selected.minor;
@@ -344,7 +534,25 @@ export function HarmonyPage() {
   ];
 
   const activeChords = progressionChords(scale, activeProgression);
-  const activeSongSection = songSections.find((section) => section.id === activeSongSectionId) || songSections[0];
+  const normalizedSongSections = songSections.map(normalizeSongSection);
+  const activeSongSection = normalizedSongSections.find((section) => section.id === activeSongSectionId) || normalizedSongSections[0];
+  const songTotalBars = normalizedSongSections.reduce((total, section) => total + section.bars, 0);
+  const songTotalChords = normalizedSongSections.reduce((total, section) => total + section.chords.length, 0);
+  const songDrumParts = normalizedSongSections.filter((section) => section.drumPattern !== 'none').length;
+  const songDurationSeconds = Math.round((songTotalBars * 4 * 60) / songBpm);
+  const arrangementChords = useMemo(() => {
+    const seen = new Set();
+    return normalizedSongSections
+      .flatMap((section) => section.chords)
+      .filter((chord) => {
+        if (seen.has(chord)) return false;
+        seen.add(chord);
+        return true;
+      });
+  }, [normalizedSongSections]);
+  const melodyChordChoices = arrangementChords.length > 0 ? arrangementChords : activeChords.map((item) => item.chord);
+  const selectedMelodyChord = melodyChordChoices.includes(melodyChord) ? melodyChord : melodyChordChoices[0] || tonic;
+  const selectedMelodyNotes = chordNotes(selectedMelodyChord);
 
   function changeMode(nextMode) {
     setMode(nextMode);
@@ -372,6 +580,7 @@ export function HarmonyPage() {
       name: activeProgression.name,
       tonic,
       mode: activeGreekMode.name,
+      bpm: progressionBpm,
       chords: activeChords.map((item) => item.chord),
       roman: activeChords.map((item) => item.roman),
       createdAt: new Date().toISOString(),
@@ -384,7 +593,14 @@ export function HarmonyPage() {
   }
 
   function addSection(type = 'Verso') {
-    const section = { id: crypto.randomUUID(), name: type, chords: [] };
+    const section = {
+      id: crypto.randomUUID(),
+      name: type,
+      chords: [],
+      bars: ['Intro', 'Outro'].includes(type) ? 4 : 8,
+      drumPattern: type === 'Estribillo' ? 'pop' : type === 'Puente' ? 'build' : 'basic',
+      drumIntensity: type === 'Estribillo' ? 0.9 : 0.7,
+    };
     setSongSections((current) => {
       const next = [...current, section];
       writeLocalList('harmonySongSections', next);
@@ -397,7 +613,7 @@ export function HarmonyPage() {
     if (!activeSongSection) return;
     setSongSections((current) => {
       const next = current.map((section) => (
-        section.id === activeSongSection.id ? { ...section, chords: [...section.chords, chord] } : section
+        section.id === activeSongSection.id ? { ...normalizeSongSection(section), chords: [...normalizeSongSection(section).chords, chord] } : normalizeSongSection(section)
       ));
       writeLocalList('harmonySongSections', next);
       return next;
@@ -408,7 +624,7 @@ export function HarmonyPage() {
     if (!activeSongSection) return;
     setSongSections((current) => {
       const next = current.map((section) => (
-        section.id === activeSongSection.id ? { ...section, chords: [...section.chords, ...progression] } : section
+        section.id === activeSongSection.id ? { ...normalizeSongSection(section), chords: [...normalizeSongSection(section).chords, ...progression] } : normalizeSongSection(section)
       ));
       writeLocalList('harmonySongSections', next);
       return next;
@@ -417,7 +633,7 @@ export function HarmonyPage() {
 
   function clearSection(sectionId) {
     setSongSections((current) => {
-      const next = current.map((section) => (section.id === sectionId ? { ...section, chords: [] } : section));
+      const next = current.map((section) => (section.id === sectionId ? { ...normalizeSongSection(section), chords: [] } : normalizeSongSection(section)));
       writeLocalList('harmonySongSections', next);
       return next;
     });
@@ -434,7 +650,7 @@ export function HarmonyPage() {
   function deleteSection(sectionId) {
     setSongSections((current) => {
       const next = current.filter((section) => section.id !== sectionId);
-      const fallback = next.length > 0 ? next : [{ id: crypto.randomUUID(), name: 'Intro', chords: [] }];
+      const fallback = next.length > 0 ? next : [{ id: crypto.randomUUID(), name: 'Intro', chords: [], bars: 4, drumPattern: 'none', drumIntensity: 0.55 }];
       writeLocalList('harmonySongSections', fallback);
       if (!fallback.some((section) => section.id === activeSongSectionId)) {
         setActiveSongSectionId(fallback[0]?.id || '');
@@ -443,13 +659,74 @@ export function HarmonyPage() {
     });
   }
 
+  function updateSectionDrum(sectionId, drumPattern) {
+    setSongSections((current) => {
+      const next = current.map((section) => (section.id === sectionId ? { ...normalizeSongSection(section), drumPattern } : normalizeSongSection(section)));
+      writeLocalList('harmonySongSections', next);
+      return next;
+    });
+  }
+
+  function updateSectionField(sectionId, field, value) {
+    setSongSections((current) => {
+      const next = current.map((section) => {
+        if (section.id !== sectionId) return normalizeSongSection(section);
+        const normalized = normalizeSongSection(section);
+        if (field === 'bars') return { ...normalized, bars: Math.min(16, Math.max(1, Number(value) || 4)) };
+        if (field === 'drumIntensity') return { ...normalized, drumIntensity: Math.min(1, Math.max(0.25, Number(value) || 0.75)) };
+        return normalized;
+      });
+      writeLocalList('harmonySongSections', next);
+      return next;
+    });
+  }
+
+  function changeProgressionBpm(value) {
+    const next = clampBpm(value);
+    setProgressionBpm(next);
+    writeLocalList('harmonyProgressionBpm', next);
+  }
+
+  function changeSongBpm(value) {
+    const next = clampBpm(value);
+    setSongBpm(next);
+    writeLocalList('harmonySongBpm', next);
+  }
+
+  function changeSongInstrument(value) {
+    setSongInstrument(value);
+    writeLocalList('harmonySongInstrument', value);
+  }
+
+  function changeSongDrumVolume(value) {
+    const next = Math.min(1.4, Math.max(0, Number(value) || 0));
+    setSongDrumVolume(next);
+    writeLocalList('harmonySongDrumVolume', next);
+    if (drumsRef.current?.bus) {
+      drumsRef.current.bus.gain.value = next * 1.35;
+    }
+  }
+
+  function addMelodyNote(note) {
+    const next = [...melodyNotes, { id: crypto.randomUUID(), chord: selectedMelodyChord, note }];
+    setMelodyNotes(next);
+    writeLocalList('harmonyMelodyNotes', next);
+    playNote(note, '8n');
+  }
+
+  function clearMelody() {
+    setMelodyNotes([]);
+    writeLocalList('harmonyMelodyNotes', []);
+  }
+
   function saveCurrentSong() {
     const song = {
       id: crypto.randomUUID(),
       title: songTitle.trim() || 'Cancion sin titulo',
       tonic,
       mode: activeGreekMode.name,
-      sections: songSections,
+      bpm: songBpm,
+      sections: songSections.map(normalizeSongSection),
       createdAt: new Date().toISOString(),
     };
 
@@ -461,10 +738,13 @@ export function HarmonyPage() {
   }
 
   function loadSong(song) {
+    const normalizedSections = (song.sections || []).map(normalizeSongSection);
     setSongTitle(song.title);
-    setSongSections(song.sections);
-    setActiveSongSectionId(song.sections[0]?.id || '');
-    writeLocalList('harmonySongSections', song.sections);
+    setSongBpm(clampBpm(song.bpm || songBpm));
+    setSongSections(normalizedSections);
+    setActiveSongSectionId(normalizedSections[0]?.id || '');
+    writeLocalList('harmonySongSections', normalizedSections);
+    writeLocalList('harmonySongBpm', clampBpm(song.bpm || songBpm));
   }
 
   function deleteSong(id) {
@@ -561,31 +841,217 @@ export function HarmonyPage() {
     return loadingRef.current;
   }
 
+  async function ensureGuitar() {
+    const { Tone } = await ensurePiano();
+    if (guitarRef.current) return { guitar: guitarRef.current, Tone };
+
+    const guitar = new Tone.PolySynth(Tone.Synth, {
+      oscillator: { type: 'fmsawtooth' },
+      envelope: { attack: 0.006, decay: 0.18, sustain: 0.18, release: 0.35 },
+      volume: -12,
+    }).toDestination();
+
+    guitarRef.current = guitar;
+    return { guitar, Tone };
+  }
+
   async function playChord(chord) {
     const { sampler, Tone } = await ensurePiano();
     const now = Tone.now();
 
+    if (songInstrument === 'guitar') {
+      const { guitar } = await ensureGuitar();
+      guitar.triggerAttackRelease(chordNotes(chord), '1.1', now, 0.66);
+      return;
+    }
+
     sampler.triggerAttackRelease(chordNotes(chord), '1.3', now, 0.75);
+  }
+
+  async function playNote(note, duration = '8n') {
+    const { sampler, Tone } = await ensurePiano();
+    const now = Tone.now();
+
+    if (songInstrument === 'guitar') {
+      const { guitar } = await ensureGuitar();
+      guitar.triggerAttackRelease(note, duration, now, 0.7);
+      return;
+    }
+
+    sampler.triggerAttackRelease(note, duration, now, 0.72);
+  }
+
+  function triggerHarmonyChord({ sampler, guitar }, Tone, chord, duration, time, velocity = 0.7) {
+    const notes = chordNotes(chord);
+
+    if (songInstrument === 'guitar' && guitar) {
+      guitar.triggerAttackRelease(notes, duration, time, velocity * 0.86);
+      return;
+    }
+
+    sampler.triggerAttackRelease(notes, duration, time, velocity);
   }
 
   async function playProgression() {
     const { sampler, Tone } = await ensurePiano();
     const now = Tone.now();
+    const beatSeconds = 60 / progressionBpm;
 
     activeChords.forEach((item, index) => {
-      const offset = index * 0.95;
-      sampler.triggerAttackRelease(chordNotes(item.chord), '0.85', now + offset, 0.72);
+      const offset = index * beatSeconds * 2;
+      sampler.triggerAttackRelease(chordNotes(item.chord), beatSeconds * 1.7, now + offset, 0.72);
     });
   }
 
-  async function playSongSketch() {
-    const { sampler, Tone } = await ensurePiano();
-    const now = Tone.now();
-    const chords = songSections.flatMap((section) => section.chords);
+  function ensureDrums(Tone) {
+    if (drumsRef.current) return drumsRef.current;
 
-    chords.forEach((chord, index) => {
-      sampler.triggerAttackRelease(chordNotes(chord), '0.85', now + index * 0.82, 0.7);
+    const drumBus = new Tone.Gain(songDrumVolume * 1.35).toDestination();
+    const drumComp = new Tone.Compressor({ threshold: -22, ratio: 3.5, attack: 0.003, release: 0.16 }).connect(drumBus);
+    const hatFilter = new Tone.Filter(7800, 'highpass').connect(drumComp);
+    const snareFilter = new Tone.Filter(1800, 'bandpass').connect(drumComp);
+
+    const kick = new Tone.MembraneSynth({
+      pitchDecay: 0.035,
+      octaves: 8,
+      oscillator: { type: 'sine' },
+      envelope: { attack: 0.001, decay: 0.28, sustain: 0.015, release: 0.18 },
+    }).connect(drumComp);
+
+    const kickClick = new Tone.NoiseSynth({
+      noise: { type: 'white' },
+      envelope: { attack: 0.001, decay: 0.018, sustain: 0, release: 0.01 },
+    }).connect(drumComp);
+
+    const snareBody = new Tone.MembraneSynth({
+      pitchDecay: 0.025,
+      octaves: 2,
+      oscillator: { type: 'triangle' },
+      envelope: { attack: 0.001, decay: 0.12, sustain: 0, release: 0.08 },
+    }).connect(drumComp);
+
+    const snareNoise = new Tone.NoiseSynth({
+      noise: { type: 'white' },
+      envelope: { attack: 0.001, decay: 0.17, sustain: 0, release: 0.09 },
+    }).connect(snareFilter);
+
+    const hat = new Tone.MetalSynth({
+      frequency: 260,
+      envelope: { attack: 0.001, decay: 0.045, release: 0.01 },
+      harmonicity: 5.1,
+      modulationIndex: 18,
+      resonance: 5200,
+      octaves: 1.5,
+    }).connect(hatFilter);
+
+    const openHat = new Tone.MetalSynth({
+      frequency: 230,
+      envelope: { attack: 0.001, decay: 0.26, release: 0.08 },
+      harmonicity: 5.6,
+      modulationIndex: 22,
+      resonance: 6200,
+      octaves: 1.8,
+    }).connect(hatFilter);
+
+    const clap = new Tone.NoiseSynth({
+      noise: { type: 'pink' },
+      envelope: { attack: 0.001, decay: 0.11, sustain: 0, release: 0.08 },
+    }).connect(snareFilter);
+
+    kick.volume.value = -4;
+    kickClick.volume.value = -20;
+    snareBody.volume.value = -12;
+    snareNoise.volume.value = -7;
+    hat.volume.value = -18;
+    openHat.volume.value = -16;
+    clap.volume.value = -9;
+
+    drumsRef.current = { bus: drumBus, kick, kickClick, snareBody, snareNoise, hat, openHat, clap };
+    return drumsRef.current;
+  }
+
+  function triggerDrum(drums, sound, time, velocity = 0.7, intensity = 0.75) {
+    const amount = Math.min(1, Math.max(0.08, velocity * intensity));
+
+    if (sound === 'kick') {
+      drums.kick.triggerAttackRelease('C1', '8n', time, amount);
+      drums.kickClick.triggerAttackRelease('64n', time, amount * 0.22);
+    }
+    if (sound === 'snare') {
+      drums.snareBody.triggerAttackRelease('D2', '16n', time, amount * 0.42);
+      drums.snareNoise.triggerAttackRelease('16n', time, amount * 0.86);
+    }
+    if (sound === 'ghostSnare') {
+      drums.snareNoise.triggerAttackRelease('32n', time, amount * 0.38);
+    }
+    if (sound === 'hat') drums.hat.triggerAttackRelease('32n', time, amount * 0.54);
+    if (sound === 'openHat') drums.openHat.triggerAttackRelease('8n', time, amount * 0.44);
+    if (sound === 'clap') drums.clap.triggerAttackRelease('16n', time, amount * 0.72);
+    if (sound === 'rim') drums.snareBody.triggerAttackRelease('G3', '32n', time, amount * 0.34);
+  }
+
+  function stopSongSketch() {
+    if (songEndTimerRef.current) {
+      clearTimeout(songEndTimerRef.current);
+      songEndTimerRef.current = null;
+    }
+
+    const Tone = toneRef.current;
+    if (Tone?.Transport) {
+      Tone.Transport.stop();
+      Tone.Transport.cancel(0);
+    }
+
+    samplerRef.current?.releaseAll?.();
+    guitarRef.current?.releaseAll?.();
+    setIsSongPlaying(false);
+  }
+
+  async function playSongSketch() {
+    if (isSongPlaying) {
+      stopSongSketch();
+      return;
+    }
+
+    const { sampler, Tone } = await ensurePiano();
+    const guitar = songInstrument === 'guitar' ? (await ensureGuitar()).guitar : null;
+    const drums = ensureDrums(Tone);
+    const beatSeconds = 60 / songBpm;
+    let cursor = 0;
+
+    stopSongSketch();
+    drums.bus.gain.value = songDrumVolume * 1.35;
+    Tone.Transport.bpm.value = songBpm;
+
+    normalizedSongSections.forEach((section) => {
+      const sectionBeats = Math.max(section.bars * 4, section.chords.length * 2, 4);
+      const pattern = DRUM_PATTERNS.find((item) => item.id === section.drumPattern) || DRUM_PATTERNS[0];
+
+      section.chords.forEach((chord, index) => {
+        const chordSpacing = sectionBeats / Math.max(section.chords.length, 1);
+        Tone.Transport.schedule((time) => {
+          triggerHarmonyChord({ sampler, guitar }, Tone, chord, beatSeconds * Math.max(1.4, chordSpacing * 0.82), time, 0.7);
+        }, cursor + index * chordSpacing * beatSeconds);
+      });
+
+      if (pattern.steps.length > 0) {
+        for (let beat = 0; beat < sectionBeats; beat += 4) {
+          pattern.steps.forEach((step) => {
+            Tone.Transport.schedule((time) => {
+              triggerDrum(drums, step.sound, time, step.velocity, section.drumIntensity);
+            }, cursor + (beat + step.beat) * beatSeconds);
+          });
+        }
+      }
+
+      cursor += sectionBeats * beatSeconds;
     });
+
+    setIsSongPlaying(true);
+    Tone.Transport.start('+0.03');
+    songEndTimerRef.current = setTimeout(() => {
+      stopSongSketch();
+    }, Math.max(500, cursor * 1000 + 450));
   }
 
   return (
@@ -709,6 +1175,10 @@ export function HarmonyPage() {
             </div>
 
             <div className="progression-tools">
+              <label className="tempo-control">
+                BPM
+                <input type="number" min="40" max="220" value={progressionBpm} onChange={(event) => changeProgressionBpm(event.target.value)} />
+              </label>
               <button className="button secondary" onClick={saveCurrentProgression} type="button">
                 <Save size={17} />
                 Guardar
@@ -844,16 +1314,47 @@ export function HarmonyPage() {
               <p>Elegis una parte, agregas acordes o progresiones, y escuchas el boceto completo.</p>
             </div>
             <button className="icon-button sound-button" onClick={playSongSketch} title="Reproducir cancion" type="button">
-              <Play size={18} />
+              {isSongPlaying ? <Square size={18} /> : <Play size={18} />}
             </button>
           </div>
 
           <div className="song-savebar">
             <input value={songTitle} onChange={(event) => setSongTitle(event.target.value)} placeholder="Nombre de la cancion" />
+            <label className="tempo-control song-tempo">
+              BPM
+              <input type="number" min="40" max="220" value={songBpm} onChange={(event) => changeSongBpm(event.target.value)} />
+            </label>
             <button className="button primary" onClick={saveCurrentSong} type="button">
               <Save size={17} />
               Guardar cancion
             </button>
+          </div>
+
+          <div className="song-mixbar">
+            <div className="instrument-switch" aria-label="Instrumento de acordes">
+              <button className={songInstrument === 'piano' ? 'active' : ''} onClick={() => changeSongInstrument('piano')} type="button">
+                <Keyboard size={16} />
+                Piano
+              </button>
+              <button className={songInstrument === 'guitar' ? 'active' : ''} onClick={() => changeSongInstrument('guitar')} type="button">
+                <Guitar size={16} />
+                Guitarra
+              </button>
+            </div>
+
+            <label className="drum-volume">
+              Bateria
+              <input type="range" min="0" max="1.4" step="0.05" value={songDrumVolume} onChange={(event) => changeSongDrumVolume(event.target.value)} />
+              <strong>{Math.round(songDrumVolume * 100)}%</strong>
+            </label>
+          </div>
+
+          <div className="song-session-summary">
+            <span><strong>{normalizedSongSections.length}</strong> partes</span>
+            <span><strong>{songTotalBars}</strong> compases</span>
+            <span><strong>{songTotalChords}</strong> acordes</span>
+            <span><strong>{Math.floor(songDurationSeconds / 60)}:{String(songDurationSeconds % 60).padStart(2, '0')}</strong> aprox.</span>
+            <span><strong>{songDrumParts}</strong> con bateria</span>
           </div>
 
           <div className="song-section-toolbar">
@@ -866,11 +1367,14 @@ export function HarmonyPage() {
           </div>
 
           <div className="song-sections">
-            {songSections.map((section) => (
+            {normalizedSongSections.map((section) => (
               <article className={activeSongSection?.id === section.id ? 'song-section active' : 'song-section'} key={section.id}>
                 <button className="song-section-head" onClick={() => setActiveSongSectionId(section.id)} type="button">
-                  <strong>{section.name}</strong>
-                  <span>{section.chords.length} acordes</span>
+                  <span>
+                    <strong>{section.name}</strong>
+                    <small>{section.bars} compases</small>
+                  </span>
+                  <em>{section.chords.length} acordes</em>
                 </button>
                 <div className="song-chords">
                   {section.chords.length === 0 && <small>Selecciona acordes o agrega una progresion.</small>}
@@ -879,6 +1383,26 @@ export function HarmonyPage() {
                       {chord}
                     </button>
                   ))}
+                </div>
+                <div className="section-arrange-controls">
+                  <label className="drum-select">
+                    Bateria
+                    <select value={section.drumPattern} onChange={(event) => updateSectionDrum(section.id, event.target.value)}>
+                      {DRUM_PATTERNS.map((pattern) => (
+                        <option key={pattern.id} value={pattern.id}>{pattern.name}</option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="drum-select">
+                    Compases
+                    <input type="number" min="1" max="16" value={section.bars} onChange={(event) => updateSectionField(section.id, 'bars', event.target.value)} />
+                  </label>
+
+                  <label className="drum-select">
+                    Intensidad
+                    <input type="range" min="0.25" max="1" step="0.05" value={section.drumIntensity} onChange={(event) => updateSectionField(section.id, 'drumIntensity', event.target.value)} />
+                  </label>
                 </div>
                 <div className="song-section-actions">
                   <button className="section-clear" onClick={() => clearSection(section.id)} type="button">
@@ -892,6 +1416,63 @@ export function HarmonyPage() {
                 </div>
               </article>
             ))}
+          </div>
+
+          <div className="melody-builder">
+            <div className="module-heading compact">
+              <div>
+                <span>Melodia</span>
+                <h3>Notas sobre el acorde</h3>
+                <p>Elegis un acorde del arreglo y construis una linea con sus notas fuertes.</p>
+              </div>
+              <button className="section-clear" onClick={clearMelody} type="button">
+                <Trash2 size={14} />
+                Limpiar
+              </button>
+            </div>
+
+            <div className="melody-toolbar">
+              <label className="drum-select">
+                Acorde
+                <select value={selectedMelodyChord} onChange={(event) => setMelodyChord(event.target.value)}>
+                  {melodyChordChoices.map((chord) => (
+                    <option key={chord} value={chord}>{chord}</option>
+                  ))}
+                </select>
+              </label>
+
+              <div className="melody-note-bank">
+                {selectedMelodyNotes.map((note) => (
+                  <button key={note} onClick={() => addMelodyNote(note)} type="button">
+                    {note}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mini-keyboard" aria-label="Notas del acorde">
+              {selectedMelodyNotes.map((note) => (
+                <button
+                  className={note.includes('#') ? 'black-key' : 'white-key'}
+                  key={`key-${note}`}
+                  onClick={() => addMelodyNote(note)}
+                  type="button"
+                >
+                  <span>{note}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="melody-timeline">
+              {melodyNotes.length === 0 && <small>Toca notas para armar una idea melodica.</small>}
+              {melodyNotes.map((item, index) => (
+                <button key={item.id} onClick={() => playNote(item.note, '8n')} type="button">
+                  <span>{index + 1}</span>
+                  <strong>{item.note}</strong>
+                  <small>{item.chord}</small>
+                </button>
+              ))}
+            </div>
           </div>
 
         </section>
