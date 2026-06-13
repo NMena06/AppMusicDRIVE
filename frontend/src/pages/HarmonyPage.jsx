@@ -1216,6 +1216,8 @@ export function HarmonyPage() {
           </div>
         </div>
       )}
+            <div className="composer-grid">
+              <aside className="composer-theory-column">
             {/* SECCIÓN: MODOS GRIEGOS */}
       <div className="harmony-section">
         <button 
@@ -1238,7 +1240,7 @@ export function HarmonyPage() {
         </button>
         
         {expandedSections.modes && (
-          <div className="modes-workspace" style={{ padding: '16px', display: 'grid', gap: '14px' }}>
+          <div className="modes-workspace">
             {/* Selector de modos */}
             <div className="mode-chip-grid">
               {GREEK_MODES.map((item) => (
@@ -1255,25 +1257,21 @@ export function HarmonyPage() {
             </div>
 
             {/* Descripción del modo activo */}
-            <div className="mode-info-card" style={{ padding: '16px', border: '1px solid #e6e0d7', borderRadius: '10px', background: '#fffdf8' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
-                <div style={{ 
-                  width: '44px', height: '44px', borderRadius: '8px', 
-                  background: 'rgba(249, 115, 22, 0.1)', color: 'var(--accent)',
-                  display: 'grid', placeItems: 'center', fontSize: '18px', fontWeight: '900'
-                }}>
+            <div className="mode-info-card">
+              <div className="mode-info-heading">
+                <div className="mode-degree-mark">
                   {activeGreekMode.roman[0]}
                 </div>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '20px' }}>{tonic} {activeGreekMode.name}</h3>
-                  <p style={{ margin: '2px 0 0', color: 'var(--muted)', fontSize: '13px' }}>{activeGreekMode.color}</p>
+                  <h3>{tonic} {activeGreekMode.name}</h3>
+                  <p>{activeGreekMode.color}</p>
                 </div>
               </div>
               <p className="mode-lesson">{activeGreekMode.lesson}</p>
             </div>
 
             {/* Escala modal con acordes */}
-            <div className="chords-section" style={{ padding: '14px', border: '1px solid #e6e6de', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.92)' }}>
+            <div className="chords-section modal-chords-section">
               <div className="chords-header">
                 <h3><Grid3X3 size={16} /> Acordes del modo {activeGreekMode.name}</h3>
               </div>
@@ -1336,6 +1334,8 @@ export function HarmonyPage() {
         )}
       </div>
 
+              </aside>
+              <div className="composer-song-column">
             <div className="composer-toolbar">
               <div className="instrument-switch">
                 <button className={songInstrument === 'piano' ? 'active' : ''} onClick={() => changeSongInstrument('piano')}>
@@ -1456,6 +1456,8 @@ export function HarmonyPage() {
                   </div>
                 </article>
               ))}
+            </div>
+              </div>
             </div>
           </div>
         )}

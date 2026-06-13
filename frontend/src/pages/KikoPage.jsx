@@ -133,6 +133,7 @@ export function KikoPage() {
   }, [modules, search]);
 
   const selectedModule = modules.find((module) => module.name === activeModule) || modules[0];
+  const displayedModules = search.trim() ? visibleModules : selectedModule ? [selectedModule] : [];
   const totalCounts = useMemo(() => getTypeCounts(documents), [documents]);
 
   useEffect(() => {
@@ -150,6 +151,11 @@ export function KikoPage() {
     setActiveDocument(document);
     setActiveModule(document.subcarpeta || 'Carpeta principal');
     touchHistory(document);
+  }
+
+  function selectModule(moduleName) {
+    setActiveModule(moduleName);
+    setActiveDocument(null);
   }
 
   function markViewed(document = activeDocument) {
@@ -199,7 +205,7 @@ export function KikoPage() {
                 <button
                   className={selectedModule?.name === module.name ? 'course-tab active' : 'course-tab'}
                   key={module.name}
-                  onClick={() => setActiveModule(module.name)}
+                  onClick={() => selectModule(module.name)}
                   type="button"
                 >
                   <FolderOpen size={18} />
@@ -217,7 +223,11 @@ export function KikoPage() {
               <div>
                 <span>Curso seleccionado</span>
                 <h3>KIKO</h3>
-                <p>Contenido ordenado por Introduccion, Dia 1, Dia 2 y el resto de carpetas de practica.</p>
+                <p>
+                  {search.trim()
+                    ? `Resultados de busqueda dentro del curso KIKO.`
+                    : `Modulo abierto: ${selectedModule?.name || 'Contenido'}.`}
+                </p>
               </div>
               <div className="course-stats">
                 <span><PlaySquare size={16} /> {totalCounts.videos} videos</span>
@@ -232,8 +242,12 @@ export function KikoPage() {
               onMarkViewed={() => markViewed(activeDocument)}
             />
 
+            {displayedModules.length === 0 && (
+              <div className="empty-state">No hay materiales para mostrar en esta busqueda.</div>
+            )}
+
             <div className="lesson-stack">
-              {visibleModules.map((module) => (
+              {displayedModules.map((module) => (
                 <article className={selectedModule?.name === module.name ? 'lesson-card active' : 'lesson-card'} key={module.name}>
                   <div className="lesson-heading">
                     <div>
